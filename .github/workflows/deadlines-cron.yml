@@ -1,0 +1,27 @@
+name: Process deadlines
+
+# RÈGLES MÉTIER (délais → 3 alertes → fermeture) + PLAN DE DÉVELOPPEMENT
+# Phase 18 : app/api/v1/deadlines/process/route.ts existe et applique la
+# règle, mais rien ne l'appelait automatiquement (aucun worker en tâche
+# de fond n'est porté par l'application elle-même — voir le commentaire
+# du route.ts). Ce workflow est le déclencheur planifié externe attendu.
+#
+# Secrets de dépôt requis (Settings → Secrets and variables → Actions) :
+#   APP_URL               — URL de base de l'application déployée
+#   DEADLINE_CRON_SECRET  — même valeur que la variable d'environnement
+#                            du même nom côté application
+
+on:
+  schedule:
+    - cron: "0 * * * *" # toutes les heures
+  workflow_dispatch: {}
+
+jobs:
+  process-deadlines:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call deadlines processing endpoint
+        run: |
+          curl --fail-with-body -sS -X POST \
+            "${{ secrets.APP_URL }}/api/v1/deadlines/process" \
+            -H "x-cron-secret: ${{ secrets.DEADLINE_CRON_SECRET }}"

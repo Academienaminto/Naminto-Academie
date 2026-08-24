@@ -1,0 +1,1267 @@
+// Naminto Académie — schéma de base de données
+// Généré à partir de MODÈLE DE DONNÉES NAMINTO ACADÉMIE.docx (version réconciliée du 23/08/2026)
+// Les champs "status" sans enum explicite restent String : le Modèle de Données est un
+// modèle fonctionnel, pas un schéma physique — voir STACK TECHNIQUE §11 (typage strict côté
+// application via Zod). Les enums ci-dessous ne couvrent que les statuts documentés dans
+// ÉTATS DES ENTITÉS NAMINTO ACADÉMIE.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Supabase : le transaction pooler (port 6543, DATABASE_URL) ne supporte
+  // pas les verrous de session nécessaires à `prisma migrate`. directUrl
+  // utilise le session pooler (port 5432, même hôte) uniquement pour les
+  // migrations — l'application au runtime continue d'utiliser DATABASE_URL.
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// ENUMS (statuts explicitement documentés dans États des Entités)
+// ============================================================
+
+enum AccountStatus {
+  ACTIF
+  BLOQUE
+  BANNI
+  EN_SUPPRESSION
+  SUPPRIME
+}
+
+enum OrderStatus {
+  CREEE
+  EN_ATTENTE
+  PAYEE
+  ECHEC
+  ANNULEE
+}
+
+enum PaymentStatus {
+  INITIE
+  EN_ATTENTE
+  CONFIRME
+  ECHOUE
+  ANNULE
+}
+
+enum AccessStatus {
+  NON_ATTRIBUE
+  ACTIF
+  SUSPENDU
+  REVOQUE
+}
+
+enum PaymentMethod {
+  MONNAIE_ELECTRONIQUE
+  CARTE
+}
+
+enum ProductType {
+  COURSE
+  FORMATION
+  BOOK
+}
+
+enum FileType {
+  PDF
+  VIDEO
+  IMAGE
+  DOCUMENT
+}
+
+enum DocumentType {
+  FAQ
+  CONFIDENTIALITE
+  STATUT
+  REGLEMENT_INTERIEUR
+  REGLES_PEDAGOGIQUES
+  REGLES_DES_DELAIS
+  REGLES_DES_SEANCES
+  MISE_EN_GARDE
+}
+
+enum DocumentCategory {
+  GENERALE
+  CURSUS
+  FORMATIONS
+  COURS
+  PAIEMENTS
+  NON_APPLICABLE
+}
+
+// ============================================================
+// IDENTITÉ
+// ============================================================
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  phone           String?
+  language        String    @default("fr")
+  status          String    @default("ACTIF")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
+
+  account      Account?
+  profile      Profile?
+  sessions     Session[]
+  roles        UserRole[]
+  passwordAuth PasswordCredential?
+
+  enrollments        Enrollment[]
+  courseProgress     CourseProgress[]
+  levelProgress      LevelProgress[]
+  formationProgress  FormationProgress[]
+  quizAttempts       QuizAttempt[]
+  practicalEvidences PracticalEvidence[]
+  evidenceReviews    EvidenceReview[]    @relation("EvidenceReviewer")
+  validations        Validation[]        @relation("ValidatedUser")
+  validatedBy        Validation[]        @relation("ValidatorUser")
+  passages           Passage[]
+  grades             Grade[]
+  learningSessions   LearningSession[]
+
+  orders    Order[]
+  payments  Payment[]
+  access    Access[]
+  downloads Download[]
+
+  conversations          Conversation[]
+  messages               Message[]               @relation("MessageSender")
+  appointments           Appointment[]
+  notifications          Notification[]
+  notificationPreference NotificationPreference?
+
+  blogPosts BlogPost[]
+  comments  Comment[]
+
+  uploadedFiles File[]
+
+  documentAcceptances DocumentAcceptance[]
+  accountDeletion     AccountDeletion?
+  accountRestorations AccountRestoration[]
+  deadlines           Deadline[]
+  emailVerifications  EmailVerification[]
+
+  @@map("users")
+}
+
+model Account {
+  id          String        @id @default(cuid())
+  userId      String        @unique @map("user_id")
+  user        User          @relation(fields: [userId], references: [id])
+  status      AccountStatus @default(ACTIF)
+  lastLoginAt DateTime?     @map("last_login_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  deletedAt   DateTime?     @map("deleted_at")
+
+  @@map("accounts")
+}
+
+// Identifiants/hash de mot de passe, séparés de User par principe de moindre exposition.
+model PasswordCredential {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  passwordHash String   @map("password_hash")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("password_credentials")
+}
+
+model Profile {
+  id          String   @id @default(cuid())
+  userId      String   @unique @map("user_id")
+  user        User     @relation(fields: [userId], references: [id])
+  firstName   String?  @map("first_name")
+  lastName    String?  @map("last_name")
+  displayName String?  @map("display_name")
+  avatar      String?
+  preferences Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+model Session {
+  id             String    @id @default(cuid())
+  userId         String    @map("user_id")
+  user           User      @relation(fields: [userId], references: [id])
+  tokenHash      String    @unique @map("token_hash")
+  status         String    @default("ACTIVE")
+  startedAt      DateTime  @default(now()) @map("started_at")
+  lastActivityAt DateTime  @default(now()) @map("last_activity_at")
+  endedAt        DateTime? @map("ended_at")
+
+  @@map("sessions")
+}
+
+model Role {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  status      String  @default("ACTIF")
+
+  users       UserRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+  resource    String?
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id])
+  roleId     String   @map("role_id")
+  role       Role     @relation(fields: [roleId], references: [id])
+  assignedAt DateTime @default(now()) @map("assigned_at")
+  assignedBy String?  @map("assigned_by")
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  roleId       String     @map("role_id")
+  role         Role       @relation(fields: [roleId], references: [id])
+  permissionId String     @map("permission_id")
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+// ============================================================
+// PARCOURS
+// ============================================================
+
+model Enrollment {
+  id          String     @id @default(cuid())
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id])
+  cursusId    String?    @map("cursus_id")
+  cursus      Cursus?    @relation(fields: [cursusId], references: [id])
+  formationId String?    @map("formation_id")
+  formation   Formation? @relation(fields: [formationId], references: [id])
+  status      String     @default("ACTIVE")
+  enrolledAt  DateTime   @default(now()) @map("enrolled_at")
+  startedAt   DateTime?  @map("started_at")
+  completedAt DateTime?  @map("completed_at")
+  cancelledAt DateTime?  @map("cancelled_at")
+
+  courseProgress    CourseProgress[]
+  levelProgress     LevelProgress[]
+  formationProgress FormationProgress[]
+  deadlines         Deadline[]
+
+  @@map("enrollments")
+}
+
+model Cursus {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  titleEn       String?   @map("title_en")
+  descriptionEn String?   @map("description_en")
+  status        String    @default("BROUILLON")
+  language      String    @default("fr")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+  archivedAt  DateTime? @map("archived_at")
+
+  levels      Level[]
+  enrollments Enrollment[]
+
+  @@map("cursus")
+}
+
+model Level {
+  id            String    @id @default(cuid())
+  cursusId      String    @map("cursus_id")
+  cursus        Cursus    @relation(fields: [cursusId], references: [id])
+  number        Int
+  name          String
+  description   String?
+  nameEn        String?   @map("name_en")
+  descriptionEn String?   @map("description_en")
+  status        String    @default("BROUILLON")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+
+  courses       Course[]
+  levelProgress LevelProgress[]
+  passagesFrom  Passage[]       @relation("PassageFromLevel")
+  passagesTo    Passage[]       @relation("PassageToLevel")
+  grades        Grade[]
+  validations   Validation[]
+
+  @@unique([cursusId, number])
+  @@map("levels")
+}
+
+model Formation {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  titleEn       String?   @map("title_en")
+  descriptionEn String?   @map("description_en")
+  price       Decimal?  @db.Decimal(10, 2)
+  currency    String?   @default("XOF")
+  status      String    @default("BROUILLON")
+  language    String    @default("fr")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+
+  parts             FormationPart[]
+  enrollments       Enrollment[]
+  formationProgress FormationProgress[]
+  products          Product[]
+
+  @@map("formations")
+}
+
+model FormationPart {
+  id            String    @id @default(cuid())
+  formationId   String    @map("formation_id")
+  formation     Formation @relation(fields: [formationId], references: [id])
+  title         String
+  description   String?
+  titleEn       String?   @map("title_en")
+  descriptionEn String?   @map("description_en")
+  position      Int
+  status      String    @default("BROUILLON")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  courses          Course[]
+  learningSessions LearningSession[]
+
+  @@map("formation_parts")
+}
+
+// ============================================================
+// CONTENUS PÉDAGOGIQUES
+// ============================================================
+
+model Course {
+  id              String         @id @default(cuid())
+  levelId         String?        @map("level_id")
+  level           Level?         @relation(fields: [levelId], references: [id])
+  formationPartId String?        @map("formation_part_id")
+  formationPart   FormationPart? @relation(fields: [formationPartId], references: [id])
+  title           String
+  description     String?        @db.Text
+  titleEn         String?        @map("title_en")
+  descriptionEn   String?        @map("description_en") @db.Text
+  price           Decimal?       @db.Decimal(10, 2)
+  currency        String?        @default("XOF")
+  status          String         @default("BROUILLON")
+  position        Int?
+  duration        Int?
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  publishedAt     DateTime?      @map("published_at")
+
+  versions         CourseVersion[]
+  quiz             Quiz?
+  courseProgress   CourseProgress[]
+  learningSessions LearningSession[]
+  deadlines        Deadline[]
+  products         Product[]
+  validations      Validation[]
+
+  // RÈGLES MÉTIER §16 : position 1 à 6 unique par niveau / par partie de
+  // formation. NULL sur level_id ou formation_part_id ne provoque jamais de
+  // conflit (sémantique NULL standard des index uniques PostgreSQL).
+  @@unique([levelId, position])
+  @@unique([formationPartId, position])
+  @@map("courses")
+}
+
+model CourseVersion {
+  id            String    @id @default(cuid())
+  courseId      String    @map("course_id")
+  course        Course    @relation(fields: [courseId], references: [id])
+  versionNumber Int       @map("version_number")
+  content       Json?
+  fileId        String?   @map("file_id")
+  file          File?     @relation(fields: [fileId], references: [id])
+  status        String    @default("BROUILLON")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  publishedAt   DateTime? @map("published_at")
+  archivedAt    DateTime? @map("archived_at")
+
+  @@unique([courseId, versionNumber])
+  @@map("course_versions")
+}
+
+model CourseProgress {
+  id                String      @id @default(cuid())
+  userId            String      @map("user_id")
+  user              User        @relation(fields: [userId], references: [id])
+  courseId          String      @map("course_id")
+  course            Course      @relation(fields: [courseId], references: [id])
+  enrollmentId      String?     @map("enrollment_id")
+  enrollment        Enrollment? @relation(fields: [enrollmentId], references: [id])
+  eligibilityStatus String      @default("NON_ELIGIBLE") @map("eligibility_status")
+  status            String      @default("NON_COMMENCE")
+  progressPercent   Int         @default(0) @map("progress_percent")
+  startedAt         DateTime?   @map("started_at")
+  completedAt       DateTime?   @map("completed_at")
+  validatedAt       DateTime?   @map("validated_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  quizAttempts QuizAttempt[]
+
+  @@unique([userId, courseId])
+  @@map("course_progress")
+}
+
+model LevelProgress {
+  id              String      @id @default(cuid())
+  userId          String      @map("user_id")
+  user            User        @relation(fields: [userId], references: [id])
+  levelId         String      @map("level_id")
+  level           Level       @relation(fields: [levelId], references: [id])
+  enrollmentId    String?     @map("enrollment_id")
+  enrollment      Enrollment? @relation(fields: [enrollmentId], references: [id])
+  status          String      @default("NON_COMMENCE")
+  progressPercent Int         @default(0) @map("progress_percent")
+  startedAt       DateTime?   @map("started_at")
+  completedAt     DateTime?   @map("completed_at")
+  validatedAt     DateTime?   @map("validated_at")
+
+  @@unique([userId, levelId])
+  @@map("level_progress")
+}
+
+model FormationProgress {
+  id              String      @id @default(cuid())
+  userId          String      @map("user_id")
+  user            User        @relation(fields: [userId], references: [id])
+  formationId     String      @map("formation_id")
+  formation       Formation   @relation(fields: [formationId], references: [id])
+  enrollmentId    String?     @map("enrollment_id")
+  enrollment      Enrollment? @relation(fields: [enrollmentId], references: [id])
+  status          String      @default("NON_COMMENCE")
+  progressPercent Int         @default(0) @map("progress_percent")
+  startedAt       DateTime?   @map("started_at")
+  completedAt     DateTime?   @map("completed_at")
+  validatedAt     DateTime?   @map("validated_at")
+
+  @@unique([userId, formationId])
+  @@map("formation_progress")
+}
+
+model Quiz {
+  id            String   @id @default(cuid())
+  courseId      String   @unique @map("course_id")
+  course        Course   @relation(fields: [courseId], references: [id])
+  title         String
+  description   String?
+  titleEn       String?  @map("title_en")
+  descriptionEn String?  @map("description_en")
+  passingScore  Int      @default(70) @map("passing_score")
+  status       String   @default("BROUILLON")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id               String   @id @default(cuid())
+  quizId           String   @map("quiz_id")
+  quiz             Quiz     @relation(fields: [quizId], references: [id])
+  question         String   @db.Text
+  questionEn       String?  @map("question_en") @db.Text
+  type             String
+  position         Int
+  points           Int      @default(1)
+  requiresEvidence Boolean  @default(false) @map("requires_evidence")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  options            QuizOption[]
+  answers            QuizAnswer[]
+  practicalEvidences PracticalEvidence[]
+
+  @@map("quiz_questions")
+}
+
+model QuizOption {
+  id         String       @id @default(cuid())
+  questionId String       @map("question_id")
+  question   QuizQuestion @relation(fields: [questionId], references: [id])
+  label      String
+  labelEn    String?      @map("label_en")
+  isCorrect  Boolean      @default(false) @map("is_correct")
+  position   Int
+
+  @@map("quiz_options")
+}
+
+model QuizAttempt {
+  id               String          @id @default(cuid())
+  quizId           String          @map("quiz_id")
+  quiz             Quiz            @relation(fields: [quizId], references: [id])
+  userId           String          @map("user_id")
+  user             User            @relation(fields: [userId], references: [id])
+  courseProgressId String?         @map("course_progress_id")
+  courseProgress   CourseProgress? @relation(fields: [courseProgressId], references: [id])
+  attemptNumber    Int             @map("attempt_number")
+  status           String          @default("EN_COURS")
+  score            Int?
+  startedAt        DateTime        @default(now()) @map("started_at")
+  submittedAt      DateTime?       @map("submitted_at")
+  correctedAt      DateTime?       @map("corrected_at")
+
+  answers            QuizAnswer[]
+  practicalEvidences PracticalEvidence[]
+  validations        Validation[]
+
+  @@map("quiz_attempts")
+}
+
+model QuizAnswer {
+  id         String       @id @default(cuid())
+  attemptId  String       @map("attempt_id")
+  attempt    QuizAttempt  @relation(fields: [attemptId], references: [id])
+  questionId String       @map("question_id")
+  question   QuizQuestion @relation(fields: [questionId], references: [id])
+  answer     Json
+  isCorrect  Boolean?     @map("is_correct")
+  points     Int?
+  createdAt  DateTime     @default(now()) @map("created_at")
+
+  @@map("quiz_answers")
+}
+
+model PracticalEvidence {
+  id          String       @id @default(cuid())
+  attemptId   String       @map("attempt_id")
+  attempt     QuizAttempt  @relation(fields: [attemptId], references: [id])
+  questionId  String       @map("question_id")
+  question    QuizQuestion @relation(fields: [questionId], references: [id])
+  userId      String       @map("user_id")
+  user        User         @relation(fields: [userId], references: [id])
+  status      String       @default("SOUMISE")
+  submittedAt DateTime     @default(now()) @map("submitted_at")
+  reviewedAt  DateTime?    @map("reviewed_at")
+  validatedAt DateTime?    @map("validated_at")
+
+  files   EvidenceFile[]
+  reviews EvidenceReview[]
+
+  @@map("practical_evidences")
+}
+
+model EvidenceFile {
+  id         String            @id @default(cuid())
+  evidenceId String            @map("evidence_id")
+  evidence   PracticalEvidence @relation(fields: [evidenceId], references: [id])
+  fileId     String            @map("file_id")
+  file       File              @relation(fields: [fileId], references: [id])
+
+  @@map("evidence_files")
+}
+
+model EvidenceReview {
+  id         String            @id @default(cuid())
+  evidenceId String            @map("evidence_id")
+  evidence   PracticalEvidence @relation(fields: [evidenceId], references: [id])
+  reviewerId String            @map("reviewer_id")
+  reviewer   User              @relation("EvidenceReviewer", fields: [reviewerId], references: [id])
+  decision   String
+  comment    String?           @db.Text
+  reviewedAt DateTime          @default(now()) @map("reviewed_at")
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  @@map("evidence_reviews")
+}
+
+model Validation {
+  id            String       @id @default(cuid())
+  userId        String       @map("user_id")
+  user          User         @relation("ValidatedUser", fields: [userId], references: [id])
+  courseId      String?      @map("course_id")
+  course        Course?      @relation(fields: [courseId], references: [id])
+  levelId       String?      @map("level_id")
+  level         Level?       @relation(fields: [levelId], references: [id])
+  quizAttemptId String?      @map("quiz_attempt_id")
+  quizAttempt   QuizAttempt? @relation(fields: [quizAttemptId], references: [id])
+  status        String       @default("EN_ATTENTE")
+  validatedBy   String?      @map("validated_by")
+  validator     User?        @relation("ValidatorUser", fields: [validatedBy], references: [id])
+  validatedAt   DateTime?    @map("validated_at")
+  reason        String?      @db.Text
+
+  @@map("validations")
+}
+
+model Passage {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  fromLevelId String?   @map("from_level_id")
+  fromLevel   Level?    @relation("PassageFromLevel", fields: [fromLevelId], references: [id])
+  toLevelId   String    @map("to_level_id")
+  toLevel     Level     @relation("PassageToLevel", fields: [toLevelId], references: [id])
+  status      String    @default("EN_ATTENTE")
+  confirmedAt DateTime? @map("confirmed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  grade Grade?
+
+  @@map("passages")
+}
+
+model Grade {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  passageId String?  @unique @map("passage_id")
+  passage   Passage? @relation(fields: [passageId], references: [id])
+  levelId   String   @map("level_id")
+  level     Level    @relation(fields: [levelId], references: [id])
+  name      String
+  status    String   @default("ACTIF")
+  grantedAt DateTime @default(now()) @map("granted_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("grades")
+}
+
+// ============================================================
+// SUIVI PÉDAGOGIQUE
+// ============================================================
+
+model LearningSession {
+  id              String         @id @default(cuid())
+  userId          String         @map("user_id")
+  user            User           @relation(fields: [userId], references: [id])
+  courseId        String?        @map("course_id")
+  course          Course?        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  formationPartId String?        @map("formation_part_id")
+  formationPart   FormationPart? @relation(fields: [formationPartId], references: [id], onDelete: Cascade)
+  sessionNumber   Int            @map("session_number")
+  status          String         @default("DISPONIBLE")
+  scheduledAt     DateTime?      @map("scheduled_at")
+  completedAt     DateTime?      @map("completed_at")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  appointment Appointment?
+
+  // Une seule unicité par regroupement (NULL est distinct de NULL en
+  // PostgreSQL, donc ces deux contraintes coexistent proprement pour un
+  // cours à la fois du cursus [formationPartId NULL] et de formation
+  // [courseId NULL]) — garantit l'idempotence de la création des 3
+  // séances au niveau base de données, même en cas d'appels concurrents
+  // (bug constaté le 23/08/2026 : double navigation quasi simultanée
+  // créant 6 séances au lieu de 3 via le seul contrôle applicatif).
+  @@unique([userId, courseId, sessionNumber])
+  @@unique([userId, formationPartId, sessionNumber])
+  // Une CHECK constraint (migration 20260823150000) impose en plus, côté
+  // base, que courseId et formationPartId ne soient jamais tous les deux
+  // NULL (ni tous les deux renseignés) — les deux contraintes d'unicité
+  // ci-dessus ne détectent pas ce cas puisque NULL n'égale jamais NULL.
+  // Prisma ne modélise pas encore les CHECK constraints nativement, donc
+  // cette règle n'apparaît pas ici en syntaxe Prisma ; voir le fichier de
+  // migration pour le DDL exact.
+  //
+  // `onDelete: Cascade` ci-dessus (migration 20260823150500) plutôt que le
+  // SetNull par défaut de Prisma pour une relation optionnelle : une
+  // séance n'a de sens que rattachée à un cours ou une partie de
+  // formation existant·e, donc si celui-ci/celle-ci est supprimé·e, la
+  // séance doit l'être aussi — pas rester avec les deux liens à NULL, un
+  // état que la CHECK constraint ci-dessus rejette précisément. Bug
+  // constaté le 23/08/2026 : la valeur par défaut SetNull produisait cet
+  // état invalide (et bloquait la suppression du cours une fois la CHECK
+  // en place).
+  @@map("learning_sessions")
+}
+
+model Deadline {
+  id           String      @id @default(cuid())
+  userId       String      @map("user_id")
+  user         User        @relation(fields: [userId], references: [id])
+  courseId     String      @map("course_id")
+  course       Course      @relation(fields: [courseId], references: [id])
+  enrollmentId String?     @map("enrollment_id")
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id])
+  startAt      DateTime    @map("start_at")
+  dueAt        DateTime    @map("due_at")
+  status       String      @default("EN_COURS")
+  warning1At   DateTime?   @map("warning_1_at")
+  warning2At   DateTime?   @map("warning_2_at")
+  warning3At   DateTime?   @map("warning_3_at")
+  closedAt     DateTime?   @map("closed_at")
+
+  @@map("deadlines")
+}
+
+// ============================================================
+// COMMERCE
+// ============================================================
+
+model Product {
+  id          String      @id @default(cuid())
+  type        ProductType
+  courseId    String?     @map("course_id")
+  course      Course?     @relation(fields: [courseId], references: [id])
+  formationId String?     @map("formation_id")
+  formation   Formation?  @relation(fields: [formationId], references: [id])
+  bookId      String?     @map("book_id")
+  book        Book?       @relation(fields: [bookId], references: [id])
+  title       String
+  description String?     @db.Text
+  price       Decimal     @db.Decimal(10, 2)
+  currency    String      @default("XOF")
+  status      String      @default("ACTIF")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  orderItems OrderItem[]
+  access     Access[]
+
+  @@map("products")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  userId      String      @map("user_id")
+  user        User        @relation(fields: [userId], references: [id])
+  status      OrderStatus @default(CREEE)
+  subtotal    Decimal     @db.Decimal(10, 2)
+  total       Decimal     @db.Decimal(10, 2)
+  currency    String      @default("XOF")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  paidAt      DateTime?   @map("paid_at")
+  cancelledAt DateTime?   @map("cancelled_at")
+
+  items    OrderItem[]
+  payments Payment[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String   @id @default(cuid())
+  orderId    String   @map("order_id")
+  order      Order    @relation(fields: [orderId], references: [id])
+  productId  String   @map("product_id")
+  product    Product  @relation(fields: [productId], references: [id])
+  quantity   Int      @default(1)
+  unitPrice  Decimal  @map("unit_price") @db.Decimal(10, 2)
+  totalPrice Decimal  @map("total_price") @db.Decimal(10, 2)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("order_items")
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String        @map("order_id")
+  order             Order         @relation(fields: [orderId], references: [id])
+  userId            String        @map("user_id")
+  user              User          @relation(fields: [userId], references: [id])
+  method            PaymentMethod
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("XOF")
+  status            PaymentStatus @default(INITIE)
+  providerReference String?       @unique @map("provider_reference")
+  initiatedAt       DateTime      @default(now()) @map("initiated_at")
+  confirmedAt       DateTime?     @map("confirmed_at")
+  failedAt          DateTime?     @map("failed_at")
+
+  events PaymentEvent[]
+
+  @@map("payments")
+}
+
+model PaymentEvent {
+  id                String   @id @default(cuid())
+  paymentId         String   @map("payment_id")
+  payment           Payment  @relation(fields: [paymentId], references: [id])
+  type              String
+  status            String
+  providerReference String?  @map("provider_reference")
+  payload           Json?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  @@map("payment_events")
+}
+
+model Access {
+  id          String       @id @default(cuid())
+  userId      String       @map("user_id")
+  user        User         @relation(fields: [userId], references: [id])
+  productId   String       @map("product_id")
+  product     Product      @relation(fields: [productId], references: [id])
+  status      AccessStatus @default(NON_ATTRIBUE)
+  grantedAt   DateTime?    @map("granted_at")
+  suspendedAt DateTime?    @map("suspended_at")
+  revokedAt   DateTime?    @map("revoked_at")
+  createdAt   DateTime     @default(now()) @map("created_at")
+
+  downloads Download[]
+
+  @@unique([userId, productId])
+  @@map("access")
+}
+
+// ============================================================
+// BIBLIOTHÈQUE
+// ============================================================
+
+model Book {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?   @db.Text
+  titleEn       String?   @map("title_en")
+  descriptionEn String?   @map("description_en") @db.Text
+  author      String?
+  price       Decimal?  @db.Decimal(10, 2)
+  currency    String?   @default("XOF")
+  isFree      Boolean   @default(false) @map("is_free")
+  status      String    @default("BROUILLON")
+  language    String    @default("fr")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  publishedAt DateTime? @map("published_at")
+
+  versions BookVersion[]
+  products Product[]
+
+  @@map("books")
+}
+
+model BookVersion {
+  id            String    @id @default(cuid())
+  bookId        String    @map("book_id")
+  book          Book      @relation(fields: [bookId], references: [id])
+  versionNumber Int       @map("version_number")
+  fileId        String?   @map("file_id")
+  file          File?     @relation(fields: [fileId], references: [id])
+  status        String    @default("BROUILLON")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  publishedAt   DateTime? @map("published_at")
+
+  @@unique([bookId, versionNumber])
+  @@map("book_versions")
+}
+
+model Download {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  accessId    String?   @map("access_id")
+  access      Access?   @relation(fields: [accessId], references: [id])
+  fileId      String    @map("file_id")
+  file        File      @relation(fields: [fileId], references: [id])
+  status      String    @default("EN_COURS")
+  startedAt   DateTime  @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("downloads")
+}
+
+// ============================================================
+// FICHIERS
+// ============================================================
+
+model File {
+  id               String    @id @default(cuid())
+  name             String
+  type             FileType?
+  mimeType         String?   @map("mime_type")
+  size             Int?
+  storageReference String    @map("storage_reference")
+  status           String    @default("ACTIF")
+  uploadedBy       String?   @map("uploaded_by")
+  uploader         User?     @relation(fields: [uploadedBy], references: [id])
+  createdAt        DateTime  @default(now()) @map("created_at")
+  archivedAt       DateTime? @map("archived_at")
+
+  versions       FileVersion[]
+  evidenceFiles  EvidenceFile[]
+  messageFiles   MessageFile[]
+  bookVersions   BookVersion[]
+  courseVersions CourseVersion[]
+  downloads      Download[]
+
+  @@map("files")
+}
+
+model FileVersion {
+  id               String   @id @default(cuid())
+  fileId           String   @map("file_id")
+  file             File     @relation(fields: [fileId], references: [id])
+  versionNumber    Int      @map("version_number")
+  storageReference String   @map("storage_reference")
+  size             Int?
+  status           String   @default("ACTIF")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@unique([fileId, versionNumber])
+  @@map("file_versions")
+}
+
+// ============================================================
+// COMMUNICATION
+// ============================================================
+
+model Conversation {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  type        String    @default("SUPPORT")
+  contextType String?   @map("context_type")
+  contextId   String?   @map("context_id")
+  status      String    @default("OUVERTE")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  closedAt    DateTime? @map("closed_at")
+
+  messages Message[]
+
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String       @map("conversation_id")
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       String       @map("sender_id")
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id])
+  content        String       @db.Text
+  status         String       @default("ENVOYE")
+  sentAt         DateTime     @default(now()) @map("sent_at")
+  readAt         DateTime?    @map("read_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  files MessageFile[]
+
+  @@map("messages")
+}
+
+model MessageFile {
+  messageId String  @map("message_id")
+  message   Message @relation(fields: [messageId], references: [id])
+  fileId    String  @map("file_id")
+  file      File    @relation(fields: [fileId], references: [id])
+
+  @@id([messageId, fileId])
+  @@map("message_files")
+}
+
+model Appointment {
+  id                String           @id @default(cuid())
+  userId            String           @map("user_id")
+  user              User             @relation(fields: [userId], references: [id])
+  learningSessionId String?          @unique @map("learning_session_id")
+  learningSession   LearningSession? @relation(fields: [learningSessionId], references: [id])
+  status            String           @default("PROPOSE")
+  proposedAt        DateTime         @default(now()) @map("proposed_at")
+  scheduledAt       DateTime?        @map("scheduled_at")
+  completedAt       DateTime?        @map("completed_at")
+  cancelledAt       DateTime?        @map("cancelled_at")
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  @@map("appointments")
+}
+
+// ============================================================
+// NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  eventId   String?   @map("event_id")
+  event     Event?    @relation(fields: [eventId], references: [id])
+  type      String
+  title     String
+  message   String    @db.Text
+  status    String    @default("NON_LUE")
+  createdAt DateTime  @default(now()) @map("created_at")
+  sentAt    DateTime? @map("sent_at")
+  readAt    DateTime? @map("read_at")
+
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id           String   @id @default(cuid())
+  userId       String   @unique @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  enabled      Boolean  @default(true)
+  soundEnabled Boolean  @default(true) @map("sound_enabled")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("notification_preferences")
+}
+
+// ============================================================
+// BLOG
+// ============================================================
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  authorId    String    @map("author_id")
+  author      User      @relation(fields: [authorId], references: [id])
+  title       String
+  content     String    @db.Text
+  excerpt     String?
+  titleEn     String?   @map("title_en")
+  contentEn   String?   @map("content_en") @db.Text
+  excerptEn   String?   @map("excerpt_en")
+  status      String    @default("BROUILLON")
+  language    String    @default("fr")
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  comments Comment[]
+
+  @@map("blog_posts")
+}
+
+model Comment {
+  id          String    @id @default(cuid())
+  blogPostId  String    @map("blog_post_id")
+  blogPost    BlogPost  @relation(fields: [blogPostId], references: [id])
+  userId      String    @map("user_id")
+  user        User      @relation(fields: [userId], references: [id])
+  content     String    @db.Text
+  status      String    @default("PUBLIE")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  publishedAt DateTime? @map("published_at")
+  moderatedAt DateTime? @map("moderated_at")
+
+  @@map("comments")
+}
+
+// ============================================================
+// MOTEUR MÉTIER
+// ============================================================
+
+model Event {
+  id               String   @id @default(cuid())
+  type             String
+  actorType        String?  @map("actor_type")
+  actorId          String?  @map("actor_id")
+  userId           String?  @map("user_id")
+  entityType       String?  @map("entity_type")
+  entityId         String?  @map("entity_id")
+  payload          Json?
+  processingStatus String   @default("NON_TRAITE") @map("processing_status")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  notifications Notification[]
+
+  @@map("events")
+}
+
+model Rule {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  value     String
+  type      String   @default("STRING")
+  status    String   @default("ACTIF")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("rules")
+}
+
+model ScheduledTask {
+  id          String    @id @default(cuid())
+  type        String
+  targetType  String?   @map("target_type")
+  targetId    String?   @map("target_id")
+  scheduledAt DateTime  @map("scheduled_at")
+  executedAt  DateTime? @map("executed_at")
+  status      String    @default("PLANIFIEE")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  @@map("scheduled_tasks")
+}
+
+// ============================================================
+// DONNÉES / HISTORIQUE
+// ============================================================
+
+model History {
+  id         String   @id @default(cuid())
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  action     String
+  oldState   Json?    @map("old_state")
+  newState   Json?    @map("new_state")
+  actorType  String?  @map("actor_type")
+  actorId    String?  @map("actor_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("history")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorType   String   @map("actor_type")
+  actorId     String   @map("actor_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String   @map("entity_id")
+  oldValue    Json?    @map("old_value")
+  newValue    Json?    @map("new_value")
+  ipReference String?  @map("ip_reference")
+  createdAt   DateTime @default(now()) @map("created_at")
+  metadata    Json?
+
+  @@map("audit_logs")
+}
+
+// ============================================================
+// DOCUMENTATION RÉGLEMENTAIRE
+// ============================================================
+
+model Document {
+  id          String            @id @default(cuid())
+  type        DocumentType
+  category    DocumentCategory? @default(NON_APPLICABLE)
+  title       String
+  description String?
+  status      String            @default("BROUILLON")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  versions DocumentVersion[]
+
+  @@map("documents")
+}
+
+model DocumentVersion {
+  id            String    @id @default(cuid())
+  documentId    String    @map("document_id")
+  document      Document  @relation(fields: [documentId], references: [id])
+  versionNumber Int       @map("version_number")
+  content       String    @db.Text
+  language      String    @default("fr")
+  status        String    @default("BROUILLON")
+  effectiveAt   DateTime? @map("effective_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  archivedAt    DateTime? @map("archived_at")
+
+  acceptances DocumentAcceptance[]
+
+  @@unique([documentId, versionNumber])
+  @@map("document_versions")
+}
+
+model DocumentAcceptance {
+  id                String          @id @default(cuid())
+  documentVersionId String          @map("document_version_id")
+  documentVersion   DocumentVersion @relation(fields: [documentVersionId], references: [id])
+  userId            String          @map("user_id")
+  user              User            @relation(fields: [userId], references: [id])
+  acceptedAt        DateTime        @default(now()) @map("accepted_at")
+  createdAt         DateTime        @default(now()) @map("created_at")
+
+  @@unique([documentVersionId, userId])
+  @@map("document_acceptances")
+}
+
+model AccountDeletion {
+  id                  String    @id @default(cuid())
+  userId              String    @unique @map("user_id")
+  user                User      @relation(fields: [userId], references: [id])
+  status              String    @default("EN_SUPPRESSION")
+  requestedAt         DateTime  @default(now()) @map("requested_at")
+  scheduledDeletionAt DateTime  @map("scheduled_deletion_at")
+  restoredAt          DateTime? @map("restored_at")
+  deletedAt           DateTime? @map("deleted_at")
+
+  restorations AccountRestoration[]
+
+  @@map("account_deletions")
+}
+
+model AccountRestoration {
+  id          String          @id @default(cuid())
+  userId      String          @map("user_id")
+  user        User            @relation(fields: [userId], references: [id])
+  deletionId  String          @map("deletion_id")
+  deletion    AccountDeletion @relation(fields: [deletionId], references: [id])
+  status      String          @default("DEMANDEE")
+  requestedAt DateTime        @default(now()) @map("requested_at")
+  restoredAt  DateTime?       @map("restored_at")
+  restoredBy  String?         @map("restored_by")
+
+  @@map("account_restorations")
+}
+
+// PROMPT MASTER AUTHENTIFICATION §72 : vérification d'email introduite comme
+// règle officielle (décision explicite du Seuil le 23/08/2026) — token à
+// usage unique, hashé en base comme les tokens de session (jamais en clair).
+model EmailVerification {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id])
+  tokenHash  String    @unique @map("token_hash")
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("email_verifications")
+}
+
+// ============================================================
+// MULTILINGUE
+// ============================================================
+
+model Language {
+  id     String @id @default(cuid())
+  code   String @unique
+  name   String
+  status String @default("ACTIF")
+
+  @@map("languages")
+}
+
+model Translation {
+  id         String   @id @default(cuid())
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  languageId String   @map("language_id")
+  field      String
+  value      String   @db.Text
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@unique([entityType, entityId, languageId, field])
+  @@map("translations")
+}

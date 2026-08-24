@@ -1,0 +1,44 @@
+name: CI
+
+# ARCHITECTURE DE DÉPLOIEMENT §46 : PUSH → LINT → TYPE CHECK → TESTS →
+# BUILD → DÉPLOIEMENT. Ce workflow couvre les quatre premières étapes ;
+# le déploiement lui-même reste géré par la plateforme d'hébergement
+# choisie (ex. déploiement automatique sur push pour Vercel), pas par ce
+# fichier.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    env:
+      # Requis par `prisma generate` (postinstall) — n'exige pas de
+      # connexion réelle à ce stade, seulement une valeur non vide.
+      # Pour les tests/le build, définir de vrais secrets si des routes
+      # exécutées pendant le build interrogent effectivement la base.
+      DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://ci:ci@localhost:5432/ci' }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL || 'postgresql://ci:ci@localhost:5432/ci' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
