@@ -5,6 +5,9 @@ import { startConversationSchema } from "@/modules/messaging/validation";
 import { listAll, listMine, startConversation } from "@/modules/messaging/service";
 
 export const GET = handleRoute(async () => {
+  // Authentifié requis ; canManageAll (MANAGE_MESSAGES) bascule sur listAll
+  // (toutes les conversations) sinon listMine restreint à l'utilisateur —
+  // anti-IDOR, voir PROMPT MASTER STACK TECHNIQUE §35 dans le service.
   const user = await requireUser();
   const canManageAll = await userHasPermission(user.id, "MANAGE_MESSAGES");
   const conversations = canManageAll ? await listAll() : await listMine(user.id);

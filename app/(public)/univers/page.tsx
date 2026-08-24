@@ -1,6 +1,9 @@
 import Image from "next/image";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Page vitrine "Univers" — entièrement statique (texte et images fixes),
+// tout le contenu vient du dictionnaire i18n (t.universPage), aucun accès
+// base de données.
 export default async function UniversPage() {
   const { t } = await getDictionary();
   const { universPage: p } = t;

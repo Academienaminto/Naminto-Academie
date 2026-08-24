@@ -2,6 +2,8 @@ import Link from "next/link";
 import { RegisterForm } from "@/components/forms/RegisterForm";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Page d'inscription — la logique de soumission (appel API, validation,
+// gestion des erreurs) vit dans le composant client RegisterForm.
 export default async function RegisterPage() {
   const { t } = await getDictionary();
 

@@ -1,3 +1,5 @@
+// Appels API centralisés pour les notifications (préférences membre et
+// marquage comme lue) — mêmes conventions que lib/api/auth.ts.
 import type { ApiResult } from "@/lib/api/auth";
 
 export interface NotificationPreference {

@@ -1,3 +1,7 @@
+// Envoi d'emails transactionnels (vérification de compte, réinitialisation
+// de mot de passe) via Gmail SMTP / nodemailer. Point d'entrée unique pour
+// ce type d'email — les routes d'auth appellent sendVerificationEmail /
+// sendPasswordResetEmail plutôt que de manipuler nodemailer elles-mêmes.
 import nodemailer from "nodemailer";
 
 // Gmail SMTP — choix opérationnel pour démarrer sans nom de domaine
@@ -14,6 +18,9 @@ function getTransport() {
   });
 }
 
+// URL publique de l'app utilisée pour construire les liens envoyés par
+// email (vérification, réinitialisation) — retombe sur localhost en dev
+// si APP_URL n'est pas défini.
 function getAppUrl(): string {
   return process.env.APP_URL ?? "http://localhost:3000";
 }

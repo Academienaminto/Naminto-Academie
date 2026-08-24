@@ -3,6 +3,10 @@ import { LanguageSwitcher } from "@/components/navigation/LanguageSwitcher";
 import { Logo } from "@/components/navigation/Logo";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Layout du groupe de routes (auth) — logo + sélecteur de langue centrés
+// au-dessus du formulaire, sans PublicHeader/PublicFooter (pages de
+// connexion/inscription/mot de passe volontairement isolées de la nav
+// publique).
 export default async function AuthLayout({
   children,
 }: {

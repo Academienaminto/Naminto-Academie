@@ -49,6 +49,11 @@ export function recordEvent(params: RecordEventParams) {
       entityType: params.entityType,
       entityId: params.entityId,
       payload: params.payload as never,
+      // "TRAITE" en dur : à ce stade il n'existe pas de file d'attente
+      // asynchrone entre l'écriture de l'événement et son traitement
+      // (notifications, etc.) — l'appelant fait les deux dans le même
+      // appel, donc l'événement est toujours considéré traité dès sa
+      // création.
       processingStatus: "TRAITE",
     },
   });

@@ -15,7 +15,7 @@ export default async function SeuilCursusDetailPage({
 
   let cursus;
   try {
-    cursus = await getCursus(id);
+    cursus = await getCursus(id, true); // page Seuil : doit voir les brouillons
   } catch (err) {
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();

@@ -1,6 +1,13 @@
 // Appels API centralisés pour le domaine auth — STACK TECHNIQUE §19.
 // N'appelle jamais fetch("/api/...") directement depuis un composant.
-
+//
+// `ApiResult<T>` défini ici est le type partagé par TOUS les autres
+// fichiers de lib/api/ (appointments, enrollment, files, formations,
+// notifications, payments, quiz) : il reflète l'enveloppe de réponse
+// produite côté serveur par lib/api/response.ts. Chaque fichier du
+// dossier suit le même patron : une petite fonction par endpoint, un
+// fetch(), et le JSON renvoyé tel quel en ApiResult<T> (pas de retry, pas
+// de cache — la gestion des états de chargement/erreur reste côté appelant).
 export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: { code: string; message: string } };

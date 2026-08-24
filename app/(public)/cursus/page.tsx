@@ -3,6 +3,7 @@ import { EnrollButton } from "@/components/forms/EnrollButton";
 import { getDictionary } from "@/lib/i18n/locale";
 import { localize, localizeOptional } from "@/lib/i18n/content";
 
+// Catalogue public des cursus — composant serveur.
 // Rendu dynamique à chaque requête, sans `revalidate` : le layout parent
 // (PublicHeader) lit la session via cookies() pour personnaliser la nav.
 // Un `revalidate` ici figeait toute la page — header compris — dans le

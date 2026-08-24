@@ -3,6 +3,8 @@ import { BookDownloadButton } from "@/components/forms/BookDownloadButton";
 import { getDictionary } from "@/lib/i18n/locale";
 import { localize, localizeOptional } from "@/lib/i18n/content";
 
+// Catalogue public de la bibliothèque (livres gratuits et payants) —
+// composant serveur, listCatalog() ne retourne que les livres publiés.
 // Pas de `revalidate` : voir la note dans app/(public)/cursus/page.tsx —
 // un cache ISR ici figerait aussi le header dépendant de la session.
 

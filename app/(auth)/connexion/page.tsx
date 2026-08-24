@@ -2,6 +2,8 @@ import Link from "next/link";
 import { LoginForm } from "@/components/forms/LoginForm";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Page de connexion — la logique de soumission (appel API, gestion des
+// erreurs) vit dans le composant client LoginForm.
 export default async function LoginPage() {
   const { t } = await getDictionary();
 

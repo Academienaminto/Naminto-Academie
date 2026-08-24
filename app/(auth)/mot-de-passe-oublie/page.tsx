@@ -2,6 +2,9 @@ import Link from "next/link";
 import { ForgotPasswordForm } from "@/components/forms/ForgotPasswordForm";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Page de demande de réinitialisation de mot de passe — envoie le lien de
+// réinitialisation par e-mail ; la logique vit dans ForgotPasswordForm
+// (composant client). Suite du parcours : app/(auth)/reinitialiser-mot-de-passe.
 export default async function ForgotPasswordPage() {
   const { t } = await getDictionary();
 

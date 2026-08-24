@@ -1,3 +1,7 @@
+// Résolution du contenu métier bilingue (par opposition au chrome
+// d'interface, qui vit dans lib/i18n/dictionaries.ts) : titres/descriptions
+// de cursus, cours, formations, quiz... saisis par le Seuil en français
+// avec une traduction anglaise optionnelle.
 import type { Locale } from "@/lib/i18n/dictionaries";
 
 /**

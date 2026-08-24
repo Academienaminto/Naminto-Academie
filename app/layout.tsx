@@ -1,3 +1,8 @@
+// Layout racine (App Router) : charge les polices Google (Fraunces/Inter),
+// pose le <html>/<body> partagés par toutes les routes (publiques, auth,
+// membre, seuil…) et importe globals.css. Composant serveur — pas de
+// logique de session ni de garde d'accès ici, voir les layouts de chaque
+// groupe de routes pour ça (ex. app/(membre)/layout.tsx).
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";

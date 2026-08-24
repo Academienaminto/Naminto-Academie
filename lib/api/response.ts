@@ -4,7 +4,12 @@ import { AppError } from "@/lib/errors";
 import { getLocale } from "@/lib/i18n/locale";
 import { errorMessages } from "@/lib/i18n/dictionaries";
 
-// Format de réponse standard — voir API ET SERVICES NAMINTO ACADÉMIE.
+// Enveloppe de réponse standard de toutes les routes API — voir API ET
+// SERVICES NAMINTO ACADÉMIE. Chaque route.ts renvoie soit `ok(data)`
+// (`{ success: true, data }`), soit une AppError attrapée par
+// `handleRoute` ci-dessous (`{ success: false, error }`). Le front ne
+// doit jamais fabriquer ces formes lui-même : il consomme ApiResult
+// (lib/api/auth.ts) qui reflète ce même contrat.
 export function ok<T>(data: T, status = 200) {
   return NextResponse.json({ success: true, data }, { status });
 }

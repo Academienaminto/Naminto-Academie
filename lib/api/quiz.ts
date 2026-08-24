@@ -1,3 +1,5 @@
+// Appels API centralisés pour le domaine quiz (démarrage et soumission
+// d'une tentative) — mêmes conventions que lib/api/auth.ts.
 import type { ApiResult } from "@/lib/api/auth";
 
 interface StartAttemptData {

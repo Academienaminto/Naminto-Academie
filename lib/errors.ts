@@ -1,4 +1,10 @@
-// Codes d'erreur stables — voir API ET SERVICES NAMINTO ACADÉMIE.
+// Contrat d'erreur applicatif partagé par toutes les routes API.
+// Ce fichier définit : la liste fermée des codes d'erreur stables (le
+// contrat côté client, à ne pas faire évoluer à la légère — voir API ET
+// SERVICES NAMINTO ACADÉMIE), leur mapping vers un status HTTP, et la
+// classe AppError à lever depuis les handlers. Consommé par
+// lib/api/response.ts (handleRoute) qui transforme un AppError levé en
+// réponse JSON `{ success: false, error }`.
 export type ErrorCode =
   | "AUTH_REQUIRED"
   | "INVALID_CREDENTIALS"

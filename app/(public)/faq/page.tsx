@@ -1,6 +1,12 @@
 import { getPublishedFaqByCategory } from "@/modules/documents/service";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// FAQ publique — regroupe plusieurs catégories de documents FAQ publiés sur
+// une seule page (contrairement aux autres pages réglementaires qui
+// utilisent SingleDocumentPage pour un seul document, voir
+// components/documents/SingleDocumentPage.tsx). Les libellés de catégorie
+// ne viennent pas du dictionnaire i18n (lib/i18n) : ils sont codés en dur
+// ici faute d'entrées dédiées dans les dictionnaires fr/en.
 const CATEGORY_LABELS_FR: Record<string, string> = {
   GENERALE: "Générale",
   CURSUS: "Cursus",

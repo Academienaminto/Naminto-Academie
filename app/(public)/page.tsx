@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/Button";
 import { HeroCarousel } from "@/components/home/HeroCarousel";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Page d'accueil publique — composant serveur, contenu statique (dictionnaire
+// i18n uniquement, aucun accès base de données) hormis le carrousel hero.
 export default async function HomePage() {
   const { t } = await getDictionary();
 

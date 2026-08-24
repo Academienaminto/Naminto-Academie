@@ -6,11 +6,14 @@ import { CommentForm } from "@/components/forms/CommentForm";
 import { getDictionary } from "@/lib/i18n/locale";
 import { localize } from "@/lib/i18n/content";
 
+// Détail d'un article de blog publié — composant serveur.
 // Pas de `revalidate` : voir la note dans app/(public)/cursus/page.tsx.
 
 export default async function BlogPostPage({
   params,
 }: {
+  // `params` est une Promise (App Router récent) : il faut l'attendre avant
+  // d'en lire les segments dynamiques.
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
@@ -19,6 +22,10 @@ export default async function BlogPostPage({
   try {
     result = await getPost(id, false);
   } catch (err) {
+    // getPost lève une AppError RESOURCE_NOT_FOUND pour un id inexistant ou
+    // un article non publié : on la traduit en 404 Next.js plutôt que de
+    // laisser remonter une erreur générique. Même schéma dans
+    // app/(public)/formations/[id]/page.tsx.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

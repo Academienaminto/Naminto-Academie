@@ -1,3 +1,5 @@
+// Appels API centralisés pour le domaine rendez-vous (proposition d'un
+// créneau par le membre) — mêmes conventions que lib/api/auth.ts.
 import type { ApiResult } from "@/lib/api/auth";
 
 export async function proposeAppointmentRequest(input: {

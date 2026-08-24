@@ -1,3 +1,7 @@
+// Résolution de la locale courante côté serveur : lit le cookie dédié et
+// fournit le dictionnaire de chrome d'interface correspondant (voir
+// lib/i18n/dictionaries.ts). Utilisé par les Server Components/routes qui
+// ont besoin de savoir dans quelle langue répondre.
 import { cookies } from "next/headers";
 import { DEFAULT_LOCALE, dictionaries, type Locale } from "@/lib/i18n/dictionaries";
 

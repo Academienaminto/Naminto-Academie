@@ -7,6 +7,9 @@ interface Params {
   params: Promise<{ id: string }>;
 }
 
+// Garde-fou anti-IDOR : un fileId est devinable/énumérable, donc
+// modules/files/service.ts getDownloadUrl vérifie que le fichier appartient
+// à user.id, sauf pour le Seuil (MANAGE_FILES) qui peut tout télécharger.
 export const GET = handleRoute(async (_req, { params }: Params) => {
   const user = await requireUser();
   const { id } = await params;

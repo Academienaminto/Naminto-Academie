@@ -9,6 +9,8 @@ interface Params {
 }
 
 export const PATCH = handleRoute(async (req, { params }: Params) => {
+  // Anti-IDOR délégué au service (comme GET .../[id]) : setConversationStatus
+  // vérifie la propriété via loadConversationForUser avant toute transition.
   const user = await requireUser();
   const { id } = await params;
   const body = updateConversationStatusSchema.parse(await req.json());

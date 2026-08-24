@@ -23,7 +23,7 @@ export default async function SeuilCourseMaterialPage({
     throw err;
   }
 
-  const { versions } = await getCourse(id);
+  const { versions } = await getCourse(id, true); // page Seuil : doit voir les brouillons
 
   return (
     <main className="flex flex-1 flex-col gap-6 p-8">

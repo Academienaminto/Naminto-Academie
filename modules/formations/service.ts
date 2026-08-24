@@ -21,9 +21,16 @@ export function listAll() {
   return repo.listAllFormations();
 }
 
-export async function getFormation(id: string) {
+/**
+ * canManageAll=false (lecture publique) : une formation non publiée répond
+ * 404, comme si elle n'existait pas — même garde que
+ * modules/books/service.ts getBook / modules/cursus/service.ts getCursus.
+ * Le Seuil (MANAGE_FORMATIONS) passe canManageAll=true pour voir ses
+ * propres brouillons.
+ */
+export async function getFormation(id: string, canManageAll = false) {
   const formation = await repo.findFormationById(id);
-  if (!formation) {
+  if (!formation || (!canManageAll && formation.status !== "PUBLIE")) {
     throw new AppError(
       "RESOURCE_NOT_FOUND",
       "Formation introuvable.",
@@ -47,7 +54,7 @@ export function createFormation(input: CreateFormationInput) {
  * cursus (9 niveaux × 6 cours).
  */
 export async function setFormationStatus(id: string, input: PublishInput) {
-  await getFormation(id); // 404 si absent
+  await getFormation(id, true); // 404 si absent ; Seuil, doit voir les brouillons
   return repo.updateFormationStatus(id, input.status);
 }
 
@@ -119,9 +126,11 @@ export async function addCourse(input: CreateFormationCourseInput) {
   return repo.createFormationCourse(input);
 }
 
-export async function getCourse(id: string) {
+/** canManageAll=false (lecture publique) : un cours de formation non publié
+ * répond 404 — même garde que getFormation ci-dessus. */
+export async function getCourse(id: string, canManageAll = false) {
   const course = await repo.findFormationCourseById(id);
-  if (!course) {
+  if (!course || (!canManageAll && course.status !== "PUBLIE")) {
     throw new AppError(
       "RESOURCE_NOT_FOUND",
       "Cours introuvable.",

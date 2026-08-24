@@ -8,6 +8,10 @@ interface Params {
 }
 
 export const PATCH = handleRoute(async (_req, { params }: Params) => {
+  // Seule action du domaine rendez-vous ouverte au titulaire lui-même (les
+  // autres — confirm/reschedule/complete — exigent MANAGE_APPOINTMENTS,
+  // donc Seuil uniquement). La vérification de propriété (sauf
+  // canManageAll) est déléguée à modules/appointments/service.ts (loadForUser).
   const user = await requireUser();
   const { id } = await params;
   const canManageAll = await userHasPermission(user.id, "MANAGE_APPOINTMENTS");

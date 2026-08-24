@@ -9,6 +9,8 @@ interface Params {
 }
 
 export const POST = handleRoute(async (req, { params }: Params) => {
+  // Anti-IDOR délégué au service (comme les autres routes conversations/[id]) :
+  // reply() vérifie que la conversation appartient à user.id, sauf canManageAll.
   const user = await requireUser();
   const { id } = await params;
   const body = sendMessageSchema.parse(await req.json());

@@ -3,6 +3,7 @@ import { listCatalog } from "@/modules/formations/service";
 import { getDictionary } from "@/lib/i18n/locale";
 import { localize, localizeOptional } from "@/lib/i18n/content";
 
+// Catalogue public des formations — composant serveur.
 // Pas de `revalidate` : voir la note dans app/(public)/cursus/page.tsx —
 // un cache ISR ici figerait aussi le header dépendant de la session.
 

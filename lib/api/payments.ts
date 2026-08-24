@@ -1,3 +1,6 @@
+// Appels API centralisés pour le domaine paiements — mêmes conventions
+// que lib/api/auth.ts. `purchaseRequest` initie l'achat côté serveur et
+// renvoie l'URL de paiement vers laquelle rediriger le membre.
 import type { ApiResult } from "@/lib/api/auth";
 
 interface PurchaseResult {

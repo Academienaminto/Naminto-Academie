@@ -19,7 +19,7 @@ export default async function SeuilFormationDetailPage({
 
   let formation;
   try {
-    formation = await getFormation(id);
+    formation = await getFormation(id, true); // page Seuil : doit voir les brouillons
   } catch (err) {
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();

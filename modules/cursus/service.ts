@@ -25,9 +25,15 @@ export function listAll() {
   return repo.listAllCursus();
 }
 
-export async function getCursus(id: string) {
+/**
+ * canManageAll=false (lecture publique) : un cursus non publié répond 404,
+ * comme s'il n'existait pas — même garde que modules/books/service.ts
+ * getBook. Le Seuil (MANAGE_CURSUS) passe canManageAll=true pour voir ses
+ * propres brouillons.
+ */
+export async function getCursus(id: string, canManageAll = false) {
   const cursus = await repo.findCursusById(id);
-  if (!cursus) {
+  if (!cursus || (!canManageAll && cursus.status !== "PUBLIE")) {
     throw new AppError("RESOURCE_NOT_FOUND", "Cursus introuvable.");
   }
   return cursus;
@@ -38,7 +44,7 @@ export function createCursus(input: CreateCursusInput) {
 }
 
 export async function updateCursus(id: string, input: UpdateCursusInput) {
-  await getCursus(id); // 404 si absent
+  await getCursus(id, true); // 404 si absent ; Seuil, doit voir les brouillons
   return repo.updateCursus(id, input);
 }
 
@@ -90,9 +96,11 @@ export async function addCourse(input: CreateCourseInput) {
   return repo.createCourse(input);
 }
 
-export async function getCourse(id: string) {
+/** canManageAll=false (lecture publique) : un cours non publié répond 404 —
+ * même garde que getCursus ci-dessus. */
+export async function getCourse(id: string, canManageAll = false) {
   const course = await repo.findCourseById(id);
-  if (!course) {
+  if (!course || (!canManageAll && course.status !== "PUBLIE")) {
     throw new AppError("RESOURCE_NOT_FOUND", "Cours introuvable.");
   }
   return course;
@@ -104,7 +112,7 @@ export async function getCourse(id: string) {
  * l'éligibilité pédagogique — voir COURSE_PROGRESS.eligibilityStatus).
  */
 export async function setCourseStatus(id: string, input: PublishInput) {
-  await getCourse(id); // 404 si absent
+  await getCourse(id, true); // 404 si absent ; Seuil, doit voir les brouillons
   return repo.updateCourseStatus(id, input.status);
 }
 
@@ -114,7 +122,7 @@ export async function setCourseStatus(id: string, input: PublishInput) {
  * Le fichier doit déjà avoir été uploadé via POST /api/v1/files.
  */
 export async function addCourseVersion(courseId: string, input: AddCourseVersionInput) {
-  await getCourse(courseId); // 404 si absent
+  await getCourse(courseId, true); // 404 si absent ; Seuil, doit voir les brouillons
   const latest = await repo.findLatestCourseVersion(courseId);
   const versionNumber = (latest?.versionNumber ?? 0) + 1;
   return repo.createCourseVersion(courseId, versionNumber, input.fileId);

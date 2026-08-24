@@ -5,6 +5,9 @@ import { createFormationSchema } from "@/modules/formations/validation";
 import { createFormation, listAll, listCatalog } from "@/modules/formations/service";
 
 export const GET = handleRoute(async () => {
+  // Lecture publique : catalogue publié par défaut (listCatalog) ;
+  // canManageAll (MANAGE_FORMATIONS) bascule sur listAll pour le Seuil
+  // (inclut les formations en brouillon).
   const user = await tryGetUser();
   const canManageAll = user
     ? await userHasPermission(user.id, "MANAGE_FORMATIONS")

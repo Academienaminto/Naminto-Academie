@@ -5,9 +5,12 @@ import { EnrollFormationButton } from "@/components/forms/EnrollFormationButton"
 import { getDictionary } from "@/lib/i18n/locale";
 import { localize, localizeOptional } from "@/lib/i18n/content";
 
+// Détail public d'une formation (parties + cours) — composant serveur.
 export default async function FormationDetailPage({
   params,
 }: {
+  // `params` est une Promise (App Router récent) : il faut l'attendre avant
+  // d'en lire les segments dynamiques.
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
@@ -16,6 +19,9 @@ export default async function FormationDetailPage({
   try {
     formation = await getFormation(id);
   } catch (err) {
+    // getFormation lève une AppError RESOURCE_NOT_FOUND pour un id
+    // inexistant : on la traduit en 404 Next.js. Même schéma dans
+    // app/(public)/blog/[id]/page.tsx.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

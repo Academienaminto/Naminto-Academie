@@ -32,6 +32,9 @@ interface RecordAuditParams {
   metadata?: unknown;
 }
 
+// Écrit une ligne d'audit — à appeler explicitement depuis chaque handler
+// qui effectue une action listée dans AuditAction (pas de déclenchement
+// automatique/implicite).
 export function recordAudit(params: RecordAuditParams) {
   return db.auditLog.create({
     data: {
@@ -47,6 +50,8 @@ export function recordAudit(params: RecordAuditParams) {
   });
 }
 
+// Lecture simple pour l'écran d'audit du Seuil — pas de pagination ni de
+// filtre, juste les `take` entrées les plus récentes.
 export function listRecentAudit(take = 100) {
   return db.auditLog.findMany({ orderBy: { createdAt: "desc" }, take });
 }
