@@ -29,7 +29,13 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      # `npm ci` a été abandonné ici : le lockfile régénéré depuis Windows
+      # ne contient pas de façon fiable les variantes Linux des dépendances
+      # optionnelles imbriquées de `sharp` (dépendance optionnelle de
+      # Next.js) — aucun environnement Linux n'est disponible localement
+      # pour générer le lockfile canonique. `npm install` reste tolérant à
+      # cet écart tout en respectant les versions fixées par package.json.
+      - run: npm install
 
       - name: Type check
         run: npx tsc --noEmit
