@@ -5,6 +5,10 @@ import { getConversation } from "@/modules/messaging/service";
 import { ReplyForm } from "@/components/forms/ReplyForm";
 import { StatusButton } from "@/components/forms/seuil/StatusButton";
 
+// Fiche d'une conversation + réponse. canManageAll=true dans getConversation
+// (modules/messaging/service.ts) : le Seuil peut ouvrir n'importe quelle
+// conversation, alors qu'un membre ne peut voir que les siennes (garde
+// anti-IDOR appliquée côté service, pas dans la route).
 export default async function SeuilConversationPage({
   params,
 }: {
@@ -17,6 +21,7 @@ export default async function SeuilConversationPage({
   try {
     conversation = await getConversation(id, user!.id, true);
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 
+// Télécharge le fichier d'un cours déjà accessible (contrôle d'accès fait
+// côté serveur par l'endpoint) et ouvre l'URL signée retournée dans un
+// nouvel onglet.
 export function DownloadCourseButton({
   courseId,
   label,

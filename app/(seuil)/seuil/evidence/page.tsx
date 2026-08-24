@@ -2,6 +2,11 @@ import { listPendingEvidence } from "@/modules/quiz/service";
 import { ReviewEvidenceForm } from "@/components/forms/seuil/ReviewEvidenceForm";
 import { ViewFileButton } from "@/components/forms/seuil/ViewFileButton";
 
+// File d'attente des preuves pratiques (questions PREUVE_PRATIQUE) en
+// attente de revue par le Seuil — étape CORRECTION du flux PROMPT MASTER
+// PROGRESSION PÉDAGOGIQUE quand elle ne peut pas être automatique.
+// ReviewEvidenceForm approuve/rejette ; une approbation peut déclencher la
+// cascade de validation du cours (modules/progress/service.ts).
 export default async function SeuilEvidencePage() {
   const evidenceList = await listPendingEvidence();
 

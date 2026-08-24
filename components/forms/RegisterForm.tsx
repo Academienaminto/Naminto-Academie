@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/Input";
 import { registerRequest } from "@/lib/api/auth";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Formulaire d'inscription publique.
 export function RegisterForm({
   t,
   tAuth,

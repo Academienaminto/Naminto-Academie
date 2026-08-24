@@ -6,6 +6,12 @@ import { getCourse } from "@/modules/cursus/service";
 import { UploadCourseFileForm } from "@/components/forms/seuil/UploadCourseFileForm";
 import { ViewFileButton } from "@/components/forms/seuil/ViewFileButton";
 
+// Gestion du matériel (fichiers) d'un cours. Course est une table partagée
+// entre cursus (level) et formations (formationPart) — cette page fonctionne
+// donc indifféremment pour un cours de cursus ou un cours de formation :
+// getCourseSummary (modules/progress/service.ts) résout le bon titre/produit
+// dans les deux cas, et modules/cursus/service.ts getCourse ne filtre pas
+// par level, donc récupère aussi bien un cours de formation.
 export default async function SeuilCourseMaterialPage({
   params,
 }: {
@@ -17,12 +23,14 @@ export default async function SeuilCourseMaterialPage({
   try {
     course = await getCourseSummary(id);
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }
     throw err;
   }
 
+  // canManageAll=true : page Seuil, doit voir un cours encore en brouillon.
   const { versions } = await getCourse(id, true); // page Seuil : doit voir les brouillons
 
   return (

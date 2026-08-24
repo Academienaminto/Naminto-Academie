@@ -12,6 +12,11 @@ import { CourseStateBadge } from "@/components/ui/CourseStateBadge";
 import { getDictionary } from "@/lib/i18n/locale";
 import { localize, localizeOptional } from "@/lib/i18n/content";
 
+// Fiche détail d'un cours : calcule l'état d'accès (LOCKED / PURCHASE_REQUIRED
+// / ACCESSIBLE / CLOSED_FOR_DELAY — voir modules/progress/service.ts,
+// RÈGLES MÉTIER §18 et §23-26) et n'affiche matériel, séances et quiz que
+// si le cours est ACCESSIBLE. L'état n'est jamais reçu du frontend, il est
+// recalculé ici côté serveur à chaque rendu.
 export default async function CoursDetailPage({
   params,
 }: {
@@ -27,6 +32,8 @@ export default async function CoursDetailPage({
   try {
     summary = await getCourseSummary(id);
   } catch (err) {
+    // getCourseSummary lève RESOURCE_NOT_FOUND (AppError) si le cours n'existe
+    // pas : converti ici en 404 Next.js. Toute autre erreur remonte telle quelle.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }
@@ -35,6 +42,8 @@ export default async function CoursDetailPage({
 
   const state = await getCourseAccessState(user.id, id);
 
+  // Quiz et séances ne sont interrogés que si le cours est ACCESSIBLE : évite
+  // des requêtes inutiles pour un cours verrouillé ou dont l'achat est requis.
   const quizStatus = state === "ACCESSIBLE" ? await getCourseQuizStatus(user.id, id) : null;
   const sessions = state === "ACCESSIBLE" ? await listMineForCourse(user.id, id) : null;
   const { t, locale } = await getDictionary();

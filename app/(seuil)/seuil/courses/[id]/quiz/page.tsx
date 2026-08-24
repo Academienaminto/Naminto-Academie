@@ -12,6 +12,10 @@ const TYPE_LABELS: Record<string, string> = {
   PREUVE_PRATIQUE: "Preuve pratique",
 };
 
+// Édition du quiz d'un cours (création si absent, sinon liste des
+// questions + publication). Comme la page matériel voisine, fonctionne
+// aussi bien pour un cours de cursus que de formation (getCourseSummary
+// gère les deux via formationPart).
 export default async function SeuilCourseQuizPage({
   params,
 }: {
@@ -23,12 +27,16 @@ export default async function SeuilCourseQuizPage({
   try {
     course = await getCourseSummary(id);
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }
     throw err;
   }
 
+  // getQuizForCourseAdmin : contrairement à la vue apprenant
+  // (getCourseQuizStatus), inclut isCorrect sur les options — usage Seuil
+  // uniquement, jamais exposé à un membre.
   const quiz = await getQuizForCourseAdmin(id);
 
   return (

@@ -5,6 +5,9 @@ import { LanguageSwitcher } from "@/components/navigation/LanguageSwitcher";
 import { Logo } from "@/components/navigation/Logo";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Composant serveur : entête public (Logo, nav desktop, MobileNav/
+// LanguageSwitcher pour le repli mobile). Les liens visibles dépendent de
+// la session (getCurrentUser) et de la locale courante (getDictionary).
 export async function PublicHeader() {
   const user = await getCurrentUser();
   const { locale, t } = await getDictionary();

@@ -1,5 +1,8 @@
 import { db } from "@/lib/db";
 
+// Tableau de bord : quelques compteurs agrégés en lecture directe via
+// Prisma (pas de module de service dédié, ces chiffres ne portent aucune
+// règle métier à appliquer).
 export default async function SeuilDashboardPage() {
   const [users, enrollments, orders, conversations, appointments, posts] =
     await Promise.all([

@@ -1,6 +1,10 @@
 import type { CourseAccessState } from "@/modules/progress/service";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Badge purement présentationnel : affiche l'état d'accès à un cours
+// (verrouillé / achat requis / accessible / clos pour délai) déjà calculé
+// par modules/progress/service. Les libellés viennent du dictionnaire i18n.
+
 const CLASSES: Record<CourseAccessState, string> = {
   LOCKED: "text-text-muted",
   PURCHASE_REQUIRED: "text-warning",

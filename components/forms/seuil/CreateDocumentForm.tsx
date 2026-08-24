@@ -25,6 +25,10 @@ const DOCUMENT_CATEGORIES = [
   { value: "PAIEMENTS", label: "Paiements" },
 ];
 
+// Formulaire Seuil : crée un document réglementaire. La catégorie n'a de
+// sens que pour le type FAQ (qui regroupe plusieurs catégories sur une
+// seule page publique, cf. SingleDocumentPage/app/(public)/faq) — forcée à
+// NON_APPLICABLE pour tous les autres types.
 export function CreateDocumentForm() {
   const router = useRouter();
   const [type, setType] = useState("FAQ");

@@ -1,5 +1,8 @@
 import { type ButtonHTMLAttributes } from "react";
 
+// Bouton de base du design system : la palette de variantes ci-dessous est
+// reprise telle quelle par ActionButton/StatusButton (components/forms/seuil)
+// et d'autres composants d'action — garder les mêmes noms de variante.
 type Variant = "primary" | "secondary" | "tertiary" | "danger";
 
 const VARIANT_CLASSES: Record<Variant, string> = {

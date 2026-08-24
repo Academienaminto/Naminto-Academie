@@ -12,6 +12,9 @@ const SLIDES = [
 
 const INTERVAL_MS = 6000;
 
+// Carrousel client de la page d'accueil : défilement automatique des images
+// SLIDES + navigation manuelle via les puces. L'effet nettoie son
+// setInterval au démontage, sûr en StrictMode (double montage dev).
 export function HeroCarousel() {
   const [index, setIndex] = useState(0);
 

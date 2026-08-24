@@ -20,6 +20,9 @@ const STATUS_CLASSES: Record<string, string> = {
   SUPPRIME: "text-text-muted",
 };
 
+// Recherche/liste des membres, avec indicateur de présence en ligne
+// (lib/auth/presence.ts isOnline : approximé depuis Session.lastActivityAt,
+// pas de websocket — voir le commentaire de ce fichier).
 export default async function SeuilMembersPage({
   searchParams,
 }: {
@@ -43,6 +46,9 @@ export default async function SeuilMembersPage({
             [member.profile?.firstName, member.profile?.lastName].filter(Boolean).join(" ") ||
             member.email;
           const status = member.account?.status ?? "ACTIF";
+          // member.sessions[0] : session ACTIVE la plus récente (déjà
+          // filtrée/triée par modules/members/repository.ts search) — sert
+          // uniquement à estimer la présence en ligne.
           const online = isOnline(member.sessions[0]?.lastActivityAt);
 
           return (

@@ -6,6 +6,11 @@ import { StatusButton } from "@/components/forms/seuil/StatusButton";
 
 const LANGUAGE_LABELS: Record<string, string> = { fr: "Français", en: "English" };
 
+// Fiche d'un document réglementaire : liste ses versions (par langue).
+// Contrairement à getBook/getCursus/getCourse/getFormation, getDocument
+// n'a pas de paramètre canManageAll — un document n'a pas de statut caché
+// aux visiteurs de la même façon (voir modules/documents/service.ts) ; il
+// n'y a donc rien à distinguer ici entre lecture publique et lecture Seuil.
 export default async function SeuilDocumentDetailPage({
   params,
 }: {
@@ -17,6 +22,7 @@ export default async function SeuilDocumentDetailPage({
   try {
     document = await getDocument(id);
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

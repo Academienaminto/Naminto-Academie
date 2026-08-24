@@ -6,6 +6,9 @@ const STATUS_LABELS: Record<string, string> = {
   FERME: "Fermé",
 };
 
+// Liste tous les délais actifs/fermés (voir modules/deadlines/service.ts
+// pour le mécanisme des 3 alertes). "Réinitialiser" (ActionButton) remet le
+// délai à zéro sans perdre l'historique des alertes déjà envoyées.
 export default async function SeuilDeadlinesPage() {
   const deadlines = await listAll();
 

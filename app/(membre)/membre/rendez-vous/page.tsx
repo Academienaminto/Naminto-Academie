@@ -4,6 +4,10 @@ import { listMine } from "@/modules/appointments/service";
 import { ProposeAppointmentForm } from "@/components/forms/ProposeAppointmentForm";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Rendez-vous du membre avec le Seuil : formulaire de proposition +
+// historique des demandes. À ne pas confondre avec les séances pédagogiques
+// (3 par cours/partie, modules/sessions) — rendez-vous et séance restent
+// deux notions distinctes (RÈGLES MÉTIER §22).
 export default async function MembreRendezVousPage() {
   const user = await getCurrentUser();
   const appointments = user ? await listMine(user.id) : [];

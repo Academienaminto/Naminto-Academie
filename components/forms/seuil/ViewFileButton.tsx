@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 
+// Ouvre un fichier déjà uploadé (URL signée retournée par le serveur) dans
+// un nouvel onglet — équivalent Seuil de DownloadCourseButton.
 export function ViewFileButton({ fileId, label }: { fileId: string; label: string }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);

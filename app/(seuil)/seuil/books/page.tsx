@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listAll } from "@/modules/books/service";
 import { CreateBookForm } from "@/components/forms/seuil/CreateBookForm";
 
+// Liste tous les livres (brouillons compris — listAll() est réservé au Seuil).
 export default async function SeuilBooksPage() {
   const books = await listAll();
 

@@ -3,6 +3,8 @@ import { listAllPosts } from "@/modules/blog/service";
 import { CreatePostForm } from "@/components/forms/seuil/CreatePostForm";
 import { StatusButton } from "@/components/forms/seuil/StatusButton";
 
+// Liste tous les articles (brouillons compris — listAllPosts() est réservé
+// au Seuil, pas de filtre de statut côté service).
 export default async function SeuilBlogPage() {
   const posts = await listAllPosts();
 

@@ -17,6 +17,10 @@ interface OptionDraft {
   isCorrect: boolean;
 }
 
+// Formulaire Seuil : crée une question de quiz. Pour CHOIX_UNIQUE, cocher
+// une option décoche automatiquement les autres (toggleCorrect) ; les
+// options sont omises de la requête pour le type PREUVE_PRATIQUE, qui
+// n'en a pas besoin (correction manuelle, cf. ReviewEvidenceForm).
 export function AddQuestionForm({
   quizId,
   nextPosition,

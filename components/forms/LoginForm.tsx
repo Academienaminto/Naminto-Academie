@@ -8,6 +8,10 @@ import { Input } from "@/components/ui/Input";
 import { loginRequest, restoreOwnAccountRequest, resendVerificationRequest } from "@/lib/api/auth";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Formulaire de connexion : au-delà du login classique, gère deux flux
+// dérivés déclenchés par le code d'erreur retourné — ACCOUNT_PENDING_DELETION
+// (proposer la restauration du compte) et EMAIL_NOT_VERIFIED (renvoyer le
+// mail de vérification) — chacun avec son propre bouton et état pending.
 export function LoginForm({ t }: { t: Dictionary["auth"] }) {
   const router = useRouter();
   const [email, setEmail] = useState("");

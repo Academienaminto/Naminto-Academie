@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/Button";
 import { proposeAppointmentRequest } from "@/lib/api/appointments";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Formulaire membre pour proposer un créneau de rendez-vous ; côté Seuil,
+// c'est ConfirmAppointmentForm qui confirme/ajuste le créneau proposé.
 export function ProposeAppointmentForm({ t }: { t: Dictionary["appointments"] }) {
   const router = useRouter();
   const [proposedAt, setProposedAt] = useState("");

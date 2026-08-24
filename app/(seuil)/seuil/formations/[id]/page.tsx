@@ -9,7 +9,10 @@ import { StatusButton } from "@/components/forms/seuil/StatusButton";
 // Rappel (voir modules/progress/service.ts advanceFormationEligibility) :
 // ne publier une partie/la formation qu'une fois tout son contenu ajouté —
 // le statut PUBLIÉ fait foi que le contenu est éditorialement complet.
-
+//
+// Fiche d'une formation : parties et cours imbriqués, chacun publiable
+// indépendamment (StatusButton par partie/cours en plus de celui de la
+// formation).
 export default async function SeuilFormationDetailPage({
   params,
 }: {
@@ -19,8 +22,11 @@ export default async function SeuilFormationDetailPage({
 
   let formation;
   try {
+    // canManageAll=true (voir modules/formations/service.ts getFormation) :
+    // le Seuil doit voir une formation encore en brouillon.
     formation = await getFormation(id, true); // page Seuil : doit voir les brouillons
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

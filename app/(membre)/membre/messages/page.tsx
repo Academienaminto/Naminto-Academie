@@ -4,6 +4,10 @@ import { listMine } from "@/modules/messaging/service";
 import { SeuilOnlineBadge } from "@/components/ui/SeuilOnlineBadge";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Liste des conversations du membre avec le Seuil (le layout parent
+// garantit l'authentification). listMine ne retourne que les conversations
+// du membre courant — anti-IDOR déjà appliqué côté service (voir
+// modules/messaging/service.ts).
 export default async function MembreMessagesPage() {
   const user = await getCurrentUser();
   const conversations = user ? await listMine(user.id) : [];
@@ -18,6 +22,7 @@ export default async function MembreMessagesPage() {
         <h1 className="font-heading text-2xl font-semibold text-text">
           {t.messagesPage.title}
         </h1>
+        {/* Statut de présence du Seuil en direct (composant serveur async, pas de polling) */}
         <SeuilOnlineBadge
           onlineLabel={t.messagesPage.seuilOnline}
           offlineLabel={t.messagesPage.seuilOffline}

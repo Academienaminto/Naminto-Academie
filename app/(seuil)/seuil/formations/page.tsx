@@ -2,6 +2,8 @@ import Link from "next/link";
 import { listAll } from "@/modules/formations/service";
 import { CreateFormationForm } from "@/components/forms/seuil/CreateFormationForm";
 
+// Liste toutes les formations (brouillons compris — listAll() est réservé
+// au Seuil).
 export default async function SeuilFormationsPage() {
   const formations = await listAll();
 

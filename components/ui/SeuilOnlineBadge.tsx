@@ -1,5 +1,7 @@
 import { isSeuilOnline } from "@/modules/auth/service";
 
+// Composant serveur (async) : interroge isSeuilOnline() à chaque rendu pour
+// afficher le statut de présence en direct, sans state client ni polling.
 export async function SeuilOnlineBadge({
   onlineLabel,
   offlineLabel,

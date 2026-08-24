@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// Formulaire Seuil : crée une partie dans une formation. Même pattern que
+// les autres formulaires "Ajouter X" du Seuil — voir AddCourseForm.
 export function AddFormationPartForm({ formationId }: { formationId: string }) {
   const router = useRouter();
   const [position, setPosition] = useState("");

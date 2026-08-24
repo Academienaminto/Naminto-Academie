@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// Formulaire Seuil : crée un cursus. Même pattern que les autres
+// formulaires "Créer/Ajouter X" du Seuil — voir AddCourseForm.
 export function CreateCursusForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");

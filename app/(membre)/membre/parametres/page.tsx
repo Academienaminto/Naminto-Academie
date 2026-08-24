@@ -5,6 +5,9 @@ import { getPreference } from "@/modules/notifications/service";
 import { getDictionary } from "@/lib/i18n/locale";
 import { SettingsForm } from "@/components/forms/SettingsForm";
 
+// Préférences de notifications du membre (activation, son). getPreference
+// peut renvoyer null si l'utilisateur n'a encore rien enregistré — d'où les
+// valeurs par défaut `?? true` passées à SettingsForm.
 export default async function ParametresPage() {
   const user = await getCurrentUser();
   if (!user) {

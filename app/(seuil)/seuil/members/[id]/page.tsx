@@ -11,6 +11,13 @@ const STATUS_LABELS: Record<string, string> = {
   SUPPRIME: "Supprimé",
 };
 
+// Fiche d'un membre : identité, rôles, compteurs, actions de modération
+// (ESPACE DU SEUIL §9-16) et historique récent. Les boutons affichés
+// dépendent de l'état du compte (ex. "Bloquer" seulement si ACTIF,
+// "Restaurer" seulement si EN_SUPPRESSION) — les routes API appelées par
+// MemberActionButton revérifient elles-mêmes ces transitions (voir
+// modules/members/service.ts assertNotSeuil : un compte Seuil ne peut pas
+// être bloqué/banni/supprimé par cette interface).
 export default async function SeuilMemberDetailPage({
   params,
 }: {
@@ -22,6 +29,7 @@ export default async function SeuilMemberDetailPage({
   try {
     member = await getMember(id);
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

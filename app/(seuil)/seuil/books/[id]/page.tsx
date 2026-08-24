@@ -4,6 +4,7 @@ import { getBook } from "@/modules/books/service";
 import { AddBookVersionForm } from "@/components/forms/seuil/AddBookVersionForm";
 import { StatusButton } from "@/components/forms/seuil/StatusButton";
 
+// Fiche d'un livre : statut + gestion des versions téléchargeables.
 export default async function SeuilBookDetailPage({
   params,
 }: {
@@ -13,8 +14,11 @@ export default async function SeuilBookDetailPage({
 
   let book;
   try {
+    // canManageAll=true (voir modules/books/service.ts getBook) : le Seuil
+    // doit pouvoir prévisualiser/gérer un livre encore en brouillon.
     book = await getBook(id, true); // page Seuil : doit voir les brouillons
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js ; autre erreur -> error boundary.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

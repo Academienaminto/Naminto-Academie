@@ -7,6 +7,9 @@ import { updateNotificationPreferenceRequest } from "@/lib/api/notifications";
 import { deleteOwnAccountRequest } from "@/lib/api/auth";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Réunit deux sections indépendantes de l'espace membre : préférences de
+// notification (sauvegarde simple) et suppression de compte (zone
+// dangereuse, avec étape de confirmation explicite avant l'appel réseau).
 export function SettingsForm({
   initialEnabled,
   initialSoundEnabled,

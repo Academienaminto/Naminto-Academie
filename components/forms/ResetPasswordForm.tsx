@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/Input";
 import { resetPasswordRequest } from "@/lib/api/auth";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Lit le token de réinitialisation dans l'URL via useSearchParams() : le
+// composant parent (page) doit l'envelopper dans un <Suspense>, sinon Next
+// échoue au build/SSR.
 export function ResetPasswordForm({ t }: { t: Dictionary["resetPasswordPage"] }) {
   const router = useRouter();
   const searchParams = useSearchParams();

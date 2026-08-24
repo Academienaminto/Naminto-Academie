@@ -4,6 +4,9 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 
+// Formulaire Seuil : publie une nouvelle version (fr/en) d'un document
+// réglementaire. Même pattern que les autres formulaires "Ajouter X" du
+// Seuil — voir AddCourseForm.
 export function AddDocumentVersionForm({ documentId }: { documentId: string }) {
   const router = useRouter();
   const [content, setContent] = useState("");

@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// Formulaire Seuil : crée une formation (gratuite ou payante). Même pattern
+// que les autres formulaires "Créer/Ajouter X" du Seuil — voir AddCourseForm.
 export function CreateFormationForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");

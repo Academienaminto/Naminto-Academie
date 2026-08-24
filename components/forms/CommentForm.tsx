@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Formulaire de commentaire sous un article de blog. Sur AUTH_REQUIRED,
+// redirige vers /connexion plutôt que d'afficher une erreur générique —
+// même pattern que EnrollButton/EnrollFormationButton.
 export function CommentForm({
   postId,
   t,

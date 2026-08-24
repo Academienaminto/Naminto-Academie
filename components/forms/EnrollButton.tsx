@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/Button";
 import { enrollRequest } from "@/lib/api/enrollment";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Inscription à un cursus. Sur AUTH_REQUIRED, redirige vers /connexion
+// plutôt que d'afficher une erreur générique — voir aussi
+// EnrollFormationButton et CommentForm pour le même pattern.
 export function EnrollButton({
   cursusId,
   t,

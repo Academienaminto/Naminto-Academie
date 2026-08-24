@@ -19,6 +19,11 @@ import { getDictionary } from "@/lib/i18n/locale";
 import { localize } from "@/lib/i18n/content";
 import { NotificationList } from "@/components/forms/NotificationList";
 
+// Tableau de bord membre : inscriptions (cursus et/ou formations),
+// notifications, séances restantes par cours et lien vers l'espace Seuil
+// si l'utilisateur y a droit. Les états d'accès et séances sont précalculés
+// avant le JSX (voir les commentaires ci-dessous) pour garder un rendu
+// synchrone et éviter les requêtes en cascade dans les .map().
 export default async function MembreHomePage() {
   // Le layout parent garantit déjà qu'un utilisateur est connecté ;
   // on relit ici l'identité pour l'affichage (jamais pour l'autorisation).
@@ -76,6 +81,7 @@ export default async function MembreHomePage() {
             {t.membrePage.greeting}
             {user?.profile?.firstName ? `, ${user.profile.firstName}` : ""}
           </h1>
+          {/* Statut de présence du Seuil en direct (composant serveur async, pas de polling) */}
           <SeuilOnlineBadge
             onlineLabel={t.messagesPage.seuilOnline}
             offlineLabel={t.messagesPage.seuilOffline}
@@ -103,6 +109,7 @@ export default async function MembreHomePage() {
           <Link href="/membre/parametres" className="text-sm text-text hover:text-accent">
             {t.nav.parametres}
           </Link>
+          {/* Lien visible uniquement pour les utilisateurs ayant le rôle SEUIL */}
           {isSeuil && (
             <Link
               href="/seuil"

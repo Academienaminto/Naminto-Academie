@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Bouton d'acceptation d'une version de document (règlement intérieur,
+// politique de confidentialité...) utilisé par SingleDocumentPage — voir
+// RÈGLES MÉTIER §63-64 pour le contexte (acceptation jamais obligatoire).
 export function AcceptDocumentButton({
   versionId,
   alreadyAccepted,

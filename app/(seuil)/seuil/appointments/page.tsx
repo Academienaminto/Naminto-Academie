@@ -2,6 +2,11 @@ import { listAll } from "@/modules/appointments/service";
 import { ConfirmAppointmentForm } from "@/components/forms/seuil/ConfirmAppointmentForm";
 import { ActionButton } from "@/components/forms/seuil/ActionButton";
 
+// Liste tous les rendez-vous, tous membres confondus (pas de filtrage par
+// canManageAll ici : listAll() côté service n'est appelé que par le Seuil).
+// PROPOSE -> confirmer (ConfirmAppointmentForm, qui ajuste éventuellement
+// la date) ou annuler ; CONFIRME -> clôturer ou annuler (ActionButton,
+// simple appel sans corps de requête).
 export default async function SeuilAppointmentsPage() {
   const appointments = await listAll();
 

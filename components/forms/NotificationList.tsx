@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { markNotificationReadRequest } from "@/lib/api/notifications";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Liste des 5 dernières notifications de l'espace membre, avec marquage
+// individuel "lu" optimiste (readIds local, confirmé par router.refresh()).
 interface NotificationItem {
   id: string;
   title: string;
@@ -22,6 +24,7 @@ export function NotificationList({
   const router = useRouter();
   const [readIds, setReadIds] = useState<Set<string>>(new Set());
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
 
   const unreadCount = notifications.filter(
     (n) => n.status === "NON_LUE" && !readIds.has(n.id),
@@ -29,9 +32,15 @@ export function NotificationList({
 
   async function onMarkRead(id: string) {
     setPendingId(id);
+    setErrorId(null);
     const result = await markNotificationReadRequest(id);
     setPendingId(null);
-    if (!result.success) return;
+    if (!result.success) {
+      // Échec conservé visible : sans ça, le bouton semblait ne rien faire
+      // en cas d'erreur réseau/serveur.
+      setErrorId(id);
+      return;
+    }
     setReadIds((prev) => new Set(prev).add(id));
     router.refresh();
   }
@@ -54,14 +63,19 @@ export function NotificationList({
                 {n.title} — {n.message}
               </span>
               {isUnread && (
-                <button
-                  type="button"
-                  onClick={() => onMarkRead(n.id)}
-                  disabled={pendingId === n.id}
-                  className="shrink-0 text-xs text-accent hover:underline disabled:opacity-50"
-                >
-                  {t.markAsRead}
-                </button>
+                <span className="flex shrink-0 items-center gap-2">
+                  {errorId === n.id && (
+                    <span className="text-xs text-error">!</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onMarkRead(n.id)}
+                    disabled={pendingId === n.id}
+                    className="text-xs text-accent hover:underline disabled:opacity-50"
+                  >
+                    {t.markAsRead}
+                  </button>
+                </span>
               )}
             </li>
           );

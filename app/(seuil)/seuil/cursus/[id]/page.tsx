@@ -6,6 +6,8 @@ import { AddLevelForm } from "@/components/forms/seuil/AddLevelForm";
 import { AddCourseForm } from "@/components/forms/seuil/AddCourseForm";
 import { StatusButton } from "@/components/forms/seuil/StatusButton";
 
+// Fiche d'un cursus : niveaux et cours imbriqués, chacun publiable
+// indépendamment (StatusButton par niveau/cours en plus de celui du cursus).
 export default async function SeuilCursusDetailPage({
   params,
 }: {
@@ -15,8 +17,11 @@ export default async function SeuilCursusDetailPage({
 
   let cursus;
   try {
+    // canManageAll=true (voir modules/cursus/service.ts getCursus) : le
+    // Seuil doit voir un cursus encore en brouillon.
     cursus = await getCursus(id, true); // page Seuil : doit voir les brouillons
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js.
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }

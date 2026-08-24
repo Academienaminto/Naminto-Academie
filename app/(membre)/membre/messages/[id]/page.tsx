@@ -8,6 +8,11 @@ import { StatusButton } from "@/components/forms/seuil/StatusButton";
 import { SeuilOnlineBadge } from "@/components/ui/SeuilOnlineBadge";
 import { getDictionary } from "@/lib/i18n/locale";
 
+// Fil d'une conversation entre le membre et le Seuil. L'auth (redirect si
+// non connecté) est garantie par le layout parent (app/(membre)/layout.tsx) ;
+// l'anti-IDOR (une conversation n'est visible que par son propriétaire) est
+// appliqué côté service, voir modules/messaging/service.ts
+// (PROMPT MASTER STACK TECHNIQUE §35 MESSAGERIE).
 export default async function MembreConversationPage({
   params,
 }: {
@@ -22,6 +27,11 @@ export default async function MembreConversationPage({
     // canManageAll=false : même vue Seuil ou non, cette page ne montre
     // jamais que les conversations qui appartiennent réellement à
     // l'utilisateur (anti-IDOR appliqué dans le service, pas ici).
+    // TODO: `user!.id` s'appuie uniquement sur la garantie du layout parent
+    // (utilisateur connecté) sans re-vérification locale, contrairement aux
+    // pages voisines (ex. membre/messages/page.tsx) qui gardent le motif
+    // défensif `user ? ... : ...`. À harmoniser, ou documenter explicitement
+    // si ce raccourci est le choix voulu.
     conversation = await getConversation(id, user!.id, false);
   } catch (err) {
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
@@ -35,6 +45,7 @@ export default async function MembreConversationPage({
       <Link href="/membre/messages" className="text-sm text-text-muted hover:text-accent">
         {t.messagesPage.back}
       </Link>
+      {/* Statut de présence du Seuil en direct (composant serveur async, pas de polling) */}
       <SeuilOnlineBadge
         onlineLabel={t.messagesPage.seuilOnline}
         offlineLabel={t.messagesPage.seuilOffline}

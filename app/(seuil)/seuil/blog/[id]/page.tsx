@@ -10,6 +10,10 @@ const COMMENT_STATUS_LABELS: Record<string, string> = {
   SUPPRIME: "Supprimé",
 };
 
+// Fiche d'un article + modération de ses commentaires. getPost(id, true) :
+// canManageAll=true fait voir un article encore en brouillon (même pattern
+// que getBook/getCursus/getCourse/getFormation) et fait remonter tous les
+// commentaires, pas seulement les publiés.
 export default async function SeuilBlogPostPage({
   params,
 }: {
@@ -21,6 +25,8 @@ export default async function SeuilBlogPostPage({
   try {
     result = await getPost(id, true);
   } catch (err) {
+    // AppError RESOURCE_NOT_FOUND -> 404 Next.js ; toute autre erreur remonte
+    // telle quelle (error boundary).
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
     }
@@ -57,6 +63,8 @@ export default async function SeuilBlogPostPage({
               </span>
             </div>
             <p className="text-text-muted">{comment.content}</p>
+            {/* StatusButton : n'affiche que les statuts différents du statut
+                actuel (pas de bouton "Publier" sur un commentaire déjà publié). */}
             <div className="flex items-center gap-2">
               {comment.status !== "PUBLIE" && (
                 <StatusButton

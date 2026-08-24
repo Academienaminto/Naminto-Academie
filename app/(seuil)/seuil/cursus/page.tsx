@@ -2,6 +2,7 @@ import Link from "next/link";
 import { listAll } from "@/modules/cursus/service";
 import { CreateCursusForm } from "@/components/forms/seuil/CreateCursusForm";
 
+// Liste tous les cursus (brouillons compris — listAll() est réservé au Seuil).
 export default async function SeuilCursusPage() {
   const cursusList = await listAll();
 

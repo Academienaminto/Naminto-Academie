@@ -1,5 +1,8 @@
 import { useId, type InputHTMLAttributes } from "react";
 
+// Champ de formulaire générique (label + erreur), utilisé par les formulaires
+// publics et Seuil. `id` retombe sur `name` puis sur un id généré via useId
+// pour rester stable en SSR/hydratation.
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;

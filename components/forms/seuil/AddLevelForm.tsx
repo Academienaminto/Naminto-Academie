@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// Formulaire Seuil : crée un niveau dans un cursus. Même pattern que les
+// autres formulaires "Ajouter X" du Seuil — voir AddCourseForm.
 export function AddLevelForm({ cursusId }: { cursusId: string }) {
   const router = useRouter();
   const [number, setNumber] = useState("");

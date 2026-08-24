@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary, Locale } from "@/lib/i18n/dictionaries";
 
+// Bascule FR/EN : POST la locale choisie (persistée côté serveur, cf.
+// /api/v1/locale) puis router.refresh() pour re-rendre les Server Components
+// avec le nouveau dictionnaire. Ne gère pas d'état d'erreur — best effort.
 export function LanguageSwitcher({
   current,
   t,

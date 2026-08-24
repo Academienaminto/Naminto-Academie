@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// Formulaire Seuil : crée un cours dans un niveau donné. Pattern partagé par
+// les autres formulaires "Ajouter X" du Seuil (Add*Form) — POST, reset des
+// champs locaux, puis router.refresh() pour recharger la liste côté serveur.
 export function AddCourseForm({ levelId }: { levelId: string }) {
   const router = useRouter();
   const [position, setPosition] = useState("");

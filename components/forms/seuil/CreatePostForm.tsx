@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// Formulaire Seuil : crée un article de blog en brouillon (publication
+// séparée, cf. StatusButton). Même pattern que les autres formulaires
+// "Créer/Ajouter X" du Seuil — voir AddCourseForm.
 export function CreatePostForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");

@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
+// Formulaire Seuil : crée le quiz d'un cours (un seul par cours). Questions
+// ajoutées ensuite via AddQuestionForm. Même pattern que les autres
+// formulaires "Créer/Ajouter X" du Seuil — voir AddCourseForm.
 export function CreateQuizForm({ courseId }: { courseId: string }) {
   const router = useRouter();
   const [title, setTitle] = useState("");

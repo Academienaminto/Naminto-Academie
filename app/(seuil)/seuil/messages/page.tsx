@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { listAll } from "@/modules/messaging/service";
 
+// Liste toutes les conversations, tous membres confondus (listAll() est
+// réservé au Seuil — voir modules/messaging/service.ts).
 export default async function SeuilMessagesPage() {
   const conversations = await listAll();
 

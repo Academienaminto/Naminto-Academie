@@ -6,6 +6,9 @@ import Link from "next/link";
 import { verifyEmailRequest } from "@/lib/api/auth";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 
+// Lit le token de vérification dans l'URL via useSearchParams() : le
+// composant parent (page) doit l'envelopper dans un <Suspense>, sinon Next
+// échoue au build/SSR.
 export function VerifyEmailStatus({ t }: { t: Dictionary["verifyEmailPage"] }) {
   const router = useRouter();
   const searchParams = useSearchParams();

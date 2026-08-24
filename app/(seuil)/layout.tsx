@@ -4,6 +4,11 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { userHasRole } from "@/lib/auth/permissions";
 import { SeuilMobileNav } from "@/components/navigation/SeuilMobileNav";
 
+// Layout racine de l'espace du Seuil (ESPACE DU SEUIL) : porte la garde
+// d'accès (rôle SEUIL, voir plus bas) et la navigation commune à toutes
+// les pages /seuil/* (sidebar desktop + nav mobile). Les pages enfants ne
+// revérifient donc jamais le rôle elles-mêmes.
+
 const NAV_ITEMS = [
   { href: "/seuil", label: "Tableau de bord" },
   { href: "/seuil/members", label: "Membres" },
