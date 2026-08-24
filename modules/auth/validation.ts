@@ -4,7 +4,7 @@ import { z } from "zod";
 // non fixé par les Règles Métier (contrairement au seuil de quiz, aux
 // délais, etc., qui sont des règles métier et vivent dans l'entité Rule).
 // 8 caractères est un plancher standard, ajustable sans impact fonctionnel.
-const PASSWORD_MIN_LENGTH = 8;
+export const PASSWORD_MIN_LENGTH = 8;
 
 export const registerSchema = z.object({
   email: z.email(),
@@ -31,3 +31,14 @@ export const resendVerificationSchema = z.object({
   email: z.email(),
 });
 export type ResendVerificationInput = z.infer<typeof resendVerificationSchema>;
+
+export const requestPasswordResetSchema = z.object({
+  email: z.email(),
+});
+export type RequestPasswordResetInput = z.infer<typeof requestPasswordResetSchema>;
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(PASSWORD_MIN_LENGTH),
+});
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

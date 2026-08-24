@@ -56,3 +56,10 @@ export async function createUser(input: CreateUserInput) {
     include: { account: true, profile: true },
   });
 }
+
+export function updatePasswordHash(userId: string, passwordHash: string) {
+  return db.passwordCredential.update({
+    where: { userId },
+    data: { passwordHash },
+  });
+}

@@ -147,6 +147,7 @@ model User {
   accountRestorations AccountRestoration[]
   deadlines           Deadline[]
   emailVerifications  EmailVerification[]
+  passwordResets      PasswordReset[]
 
   @@map("users")
 }
@@ -1238,6 +1239,21 @@ model EmailVerification {
   createdAt  DateTime  @default(now()) @map("created_at")
 
   @@map("email_verifications")
+}
+
+// PROMPT MASTER AUTHENTIFICATION §25-26-28 : récupération de compte par
+// email — jeton temporaire et sécurisé (hashé, à usage unique), sans
+// jamais révéler si l'adresse possède un compte (voir service).
+model PasswordReset {
+  id         String    @id @default(cuid())
+  userId     String    @map("user_id")
+  user       User      @relation(fields: [userId], references: [id])
+  tokenHash  String    @unique @map("token_hash")
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@map("password_resets")
 }
 
 // ============================================================

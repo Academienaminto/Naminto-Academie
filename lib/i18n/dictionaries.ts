@@ -69,6 +69,26 @@ export interface Dictionary {
     resendVerification: string;
     resendingVerification: string;
     resendVerificationSuccess: string;
+    forgotPassword: string;
+  };
+  forgotPasswordPage: {
+    title: string;
+    intro: string;
+    submit: string;
+    submitting: string;
+    checkEmailMessage: string;
+    backToLogin: string;
+  };
+  resetPasswordPage: {
+    title: string;
+    newPassword: string;
+    confirmPassword: string;
+    submit: string;
+    submitting: string;
+    success: string;
+    invalid: string;
+    mismatch: string;
+    backToLogin: string;
   };
   register: {
     title: string;
@@ -298,6 +318,26 @@ export const dictionaries: Record<"fr" | "en", Dictionary> = {
       resendVerification: "Renvoyer l'email de confirmation",
       resendingVerification: "Envoi…",
       resendVerificationSuccess: "Email de confirmation renvoyé. Vérifiez votre boîte mail.",
+      forgotPassword: "Mot de passe oublié ?",
+    },
+    forgotPasswordPage: {
+      title: "Mot de passe oublié",
+      intro: "Indiquez votre adresse email : si un compte lui est associé, vous recevrez un lien pour réinitialiser votre mot de passe.",
+      submit: "Envoyer le lien",
+      submitting: "Envoi…",
+      checkEmailMessage: "Si un compte existe avec cette adresse, un email vient d'être envoyé avec un lien de réinitialisation.",
+      backToLogin: "Retour à la connexion",
+    },
+    resetPasswordPage: {
+      title: "Nouveau mot de passe",
+      newPassword: "Nouveau mot de passe",
+      confirmPassword: "Confirmer le mot de passe",
+      submit: "Réinitialiser le mot de passe",
+      submitting: "Enregistrement…",
+      success: "Mot de passe mis à jour. Vous êtes maintenant connecté.",
+      invalid: "Ce lien de réinitialisation est invalide ou a expiré.",
+      mismatch: "Les mots de passe ne correspondent pas.",
+      backToLogin: "Retour à la connexion",
     },
     register: {
       title: "Créer un compte",
@@ -529,6 +569,26 @@ export const dictionaries: Record<"fr" | "en", Dictionary> = {
       resendVerification: "Resend confirmation email",
       resendingVerification: "Sending…",
       resendVerificationSuccess: "Confirmation email resent. Check your inbox.",
+      forgotPassword: "Forgot your password?",
+    },
+    forgotPasswordPage: {
+      title: "Forgot password",
+      intro: "Enter your email address: if an account is linked to it, you will receive a link to reset your password.",
+      submit: "Send the link",
+      submitting: "Sending…",
+      checkEmailMessage: "If an account exists with that address, an email with a reset link has just been sent.",
+      backToLogin: "Back to login",
+    },
+    resetPasswordPage: {
+      title: "New password",
+      newPassword: "New password",
+      confirmPassword: "Confirm password",
+      submit: "Reset password",
+      submitting: "Saving…",
+      success: "Password updated. You are now logged in.",
+      invalid: "This reset link is invalid or has expired.",
+      mismatch: "Passwords do not match.",
+      backToLogin: "Back to login",
     },
     register: {
       title: "Create an account",
@@ -731,6 +791,7 @@ export const errorMessages: Record<Locale, Record<string, string>> = {
     "auth.emailNotVerified":
       "Confirmez votre adresse email avant de vous connecter. Vérifiez votre boîte mail.",
     "auth.verificationInvalid": "Ce lien de vérification est invalide ou expiré.",
+    "auth.resetInvalid": "Ce lien de réinitialisation est invalide ou expiré.",
     "account.alreadyPendingDeletion": "Ce compte est déjà en cours de suppression.",
     "enrollment.alreadyEnrolled": "Déjà inscrit à ce cursus.",
     "formations.alreadyEnrolled": "Déjà inscrit à cette formation.",
@@ -787,6 +848,7 @@ export const errorMessages: Record<Locale, Record<string, string>> = {
     "auth.notPendingDeletion": "This account is not pending deletion.",
     "auth.emailNotVerified": "Confirm your email address before logging in. Check your inbox.",
     "auth.verificationInvalid": "This verification link is invalid or has expired.",
+    "auth.resetInvalid": "This reset link is invalid or has expired.",
     "account.alreadyPendingDeletion": "This account is already pending deletion.",
     "enrollment.alreadyEnrolled": "Already enrolled in this curriculum.",
     "formations.alreadyEnrolled": "Already enrolled in this course.",

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { loginRequest, restoreOwnAccountRequest, resendVerificationRequest } from "@/lib/api/auth";
@@ -94,6 +95,9 @@ export function LoginForm({ t }: { t: Dictionary["auth"] }) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+      <Link href="/mot-de-passe-oublie" className="self-end text-sm text-accent hover:underline">
+        {t.forgotPassword}
+      </Link>
       {restored && <p className="text-sm text-success">{t.restoreAccountSuccess}</p>}
       {resent && <p className="text-sm text-success">{t.resendVerificationSuccess}</p>}
       {error && <p className="text-sm text-error">{error}</p>}

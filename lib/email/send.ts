@@ -42,3 +42,28 @@ export async function sendVerificationEmail(
     html: `<p>${greeting}</p><p>Confirmez votre adresse email pour activer votre compte Naminto Académie :</p><p><a href="${url}">${url}</a></p><p>Ce lien expire dans 24 heures. Si vous n'êtes pas à l'origine de cette inscription, ignorez ce message.</p>`,
   });
 }
+
+export async function sendPasswordResetEmail(
+  to: string,
+  token: string,
+  firstName?: string,
+): Promise<void> {
+  const url = `${getAppUrl()}/reinitialiser-mot-de-passe?token=${token}`;
+  const greeting = firstName ? `Bonjour ${firstName},` : "Bonjour,";
+
+  const transport = getTransport();
+  if (!transport) {
+    console.warn(
+      `[email] GMAIL_USER/GMAIL_APP_PASSWORD non configurés — lien de réinitialisation pour ${to} : ${url}`,
+    );
+    return;
+  }
+
+  await transport.sendMail({
+    from: process.env.GMAIL_USER,
+    to,
+    subject: "Réinitialisation de votre mot de passe — Naminto Académie",
+    text: `${greeting}\n\nUne demande de réinitialisation de mot de passe a été faite pour votre compte Naminto Académie. Cliquez sur ce lien pour choisir un nouveau mot de passe :\n${url}\n\nCe lien expire dans 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : votre mot de passe actuel reste inchangé.`,
+    html: `<p>${greeting}</p><p>Une demande de réinitialisation de mot de passe a été faite pour votre compte Naminto Académie. Cliquez sur ce lien pour choisir un nouveau mot de passe :</p><p><a href="${url}">${url}</a></p><p>Ce lien expire dans 1 heure. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : votre mot de passe actuel reste inchangé.</p>`,
+  });
+}

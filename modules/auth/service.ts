@@ -1,9 +1,20 @@
 import { AppError } from "@/lib/errors";
 import { hashPassword, verifyPassword } from "@/lib/auth/hash";
-import { createSession, destroySession, getCurrentUser } from "@/lib/auth/session";
+import {
+  createSession,
+  destroyAllSessions,
+  destroySession,
+  getCurrentUser,
+} from "@/lib/auth/session";
 import { issueEmailVerification, consumeEmailVerification } from "@/lib/auth/email-verification";
-import { sendVerificationEmail } from "@/lib/email/send";
-import { createUser, findUserByEmail, findUserById } from "@/modules/auth/repository";
+import { issuePasswordReset, consumePasswordReset } from "@/lib/auth/password-reset";
+import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/email/send";
+import {
+  createUser,
+  findUserByEmail,
+  findUserById,
+  updatePasswordHash,
+} from "@/modules/auth/repository";
 import { restoreOwnAccount as restoreOwnAccountMembership } from "@/modules/members/service";
 import type { LoginInput, RegisterInput } from "@/modules/auth/validation";
 
@@ -180,6 +191,41 @@ export async function resendVerificationEmail(email: string) {
   if (!user || user.emailVerifiedAt) return;
   const token = await issueEmailVerification(user.id);
   await sendVerificationEmail(user.email, token, user.profile?.firstName ?? undefined);
+}
+
+/**
+ * Mot de passe oublié — PROMPT MASTER AUTHENTIFICATION §28 : ne révèle
+ * jamais si l'adresse possède un compte (reste silencieux dans tous les
+ * cas, même §31 ÉNUMÉRATION DE COMPTES que resendVerificationEmail).
+ */
+export async function requestPasswordReset(email: string) {
+  const user = await findUserByEmail(email);
+  if (!user || !user.passwordAuth) return;
+  const token = await issuePasswordReset(user.id);
+  await sendPasswordResetEmail(user.email, token, user.profile?.firstName ?? undefined);
+}
+
+/**
+ * §25-26 : le jeton reçu par email suffit à prouver l'identité pour cette
+ * seule action. Toutes les sessions existantes sont révoquées (compromission
+ * potentielle du mot de passe précédent), puis une nouvelle est ouverte
+ * pour ce même geste de réinitialisation — cohérent avec verifyEmail.
+ */
+export async function resetPassword(token: string, newPassword: string) {
+  const userId = await consumePasswordReset(token);
+  if (!userId) {
+    throw new AppError(
+      "INVALID_STATE",
+      "Ce lien de réinitialisation est invalide ou expiré.",
+      undefined,
+      "auth.resetInvalid",
+    );
+  }
+  const passwordHash = await hashPassword(newPassword);
+  await updatePasswordHash(userId, passwordHash);
+  await destroyAllSessions(userId);
+  await createSession(userId);
+  return findUserById(userId);
 }
 
 /** Déconnexion — invalide la session côté serveur (§9). */

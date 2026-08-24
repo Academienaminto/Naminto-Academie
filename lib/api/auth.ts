@@ -59,3 +59,11 @@ export function verifyEmailRequest(token: string) {
 export function resendVerificationRequest(email: string) {
   return post<{ sent: boolean }>("/api/v1/auth/resend-verification", { email });
 }
+
+export function forgotPasswordRequest(email: string) {
+  return post<{ sent: boolean }>("/api/v1/auth/forgot-password", { email });
+}
+
+export function resetPasswordRequest(input: { token: string; password: string }) {
+  return post<PublicUser>("/api/v1/auth/reset-password", input);
+}
