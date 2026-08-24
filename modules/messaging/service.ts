@@ -1,7 +1,10 @@
 import { AppError } from "@/lib/errors";
 import { notify } from "@/modules/notifications/service";
 import * as repo from "@/modules/messaging/repository";
-import type { StartConversationInput } from "@/modules/messaging/validation";
+import type {
+  StartConversationInput,
+  UpdateConversationStatusInput,
+} from "@/modules/messaging/validation";
 
 // PROMPT MASTER STACK TECHNIQUE §35 MESSAGERIE : un utilisateur ne doit
 // jamais pouvoir récupérer les messages d'un autre utilisateur (anti-IDOR).
@@ -86,4 +89,20 @@ export async function reply(
   }
 
   return message;
+}
+
+/**
+ * ÉTATS DES ENTITÉS §32 : OUVERTE → ACTIVE → FERMÉE. Autorisée au
+ * titulaire de la conversation comme au Seuil (même règle de possession
+ * que reply/getConversation) — jamais de suppression, voir PROMPT MASTER
+ * MESSAGERIE §26 : une conversation fermée reste conservée.
+ */
+export async function setConversationStatus(
+  conversationId: string,
+  userId: string,
+  canManageAll: boolean,
+  input: UpdateConversationStatusInput,
+) {
+  await loadConversationForUser(conversationId, userId, canManageAll);
+  return repo.updateConversationStatus(conversationId, input.status);
 }

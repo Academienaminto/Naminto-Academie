@@ -4,7 +4,17 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 
-export function ReplyForm({ conversationId }: { conversationId: string }) {
+export function ReplyForm({
+  conversationId,
+  placeholder = "Répondre…",
+  sendLabel = "Envoyer",
+  sendingLabel = "…",
+}: {
+  conversationId: string;
+  placeholder?: string;
+  sendLabel?: string;
+  sendingLabel?: string;
+}) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [pending, setPending] = useState(false);
@@ -29,11 +39,11 @@ export function ReplyForm({ conversationId }: { conversationId: string }) {
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={2}
-        placeholder="Répondre…"
+        placeholder={placeholder}
         className="flex-1 rounded-md border border-border bg-surface px-3 py-2 text-text outline-none focus:border-accent"
       />
       <Button type="submit" disabled={pending}>
-        {pending ? "…" : "Envoyer"}
+        {pending ? sendingLabel : sendLabel}
       </Button>
     </form>
   );

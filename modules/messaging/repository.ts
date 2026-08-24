@@ -28,6 +28,13 @@ export function findConversationById(id: string) {
   });
 }
 
+export function updateConversationStatus(id: string, status: string) {
+  return db.conversation.update({
+    where: { id },
+    data: { status, closedAt: status === "FERMEE" ? new Date() : null },
+  });
+}
+
 export function listMyConversations(userId: string) {
   return db.conversation.findMany({
     where: { userId },

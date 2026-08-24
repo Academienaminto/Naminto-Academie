@@ -49,6 +49,9 @@ export function MembreMobileNav({
           <Link href="/membre/rendez-vous" className="rounded-md px-2 py-2 hover:bg-surface">
             {t.rendezVous}
           </Link>
+          <Link href="/membre/messages" className="rounded-md px-2 py-2 hover:bg-surface">
+            {t.messages}
+          </Link>
           <Link href="/membre/parametres" className="rounded-md px-2 py-2 hover:bg-surface">
             {t.parametres}
           </Link>

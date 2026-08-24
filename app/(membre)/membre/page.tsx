@@ -92,6 +92,9 @@ export default async function MembreHomePage() {
           <Link href="/membre/rendez-vous" className="text-sm text-text hover:text-accent">
             {t.nav.rendezVous}
           </Link>
+          <Link href="/membre/messages" className="text-sm text-text hover:text-accent">
+            {t.nav.messages}
+          </Link>
           <Link href="/membre/parametres" className="text-sm text-text hover:text-accent">
             {t.nav.parametres}
           </Link>

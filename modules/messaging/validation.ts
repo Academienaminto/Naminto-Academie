@@ -16,3 +16,12 @@ export const sendMessageSchema = z.object({
   content: z.string().min(1).max(5000),
 });
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
+
+// ÉTATS DES ENTITÉS §32 : OUVERTE → ACTIVE → FERMÉE. Une conversation
+// fermée reste conservée (jamais supprimée) selon les règles d'historique.
+export const CONVERSATION_STATUSES = ["OUVERTE", "ACTIVE", "FERMEE"] as const;
+
+export const updateConversationStatusSchema = z.object({
+  status: z.enum(CONVERSATION_STATUSES),
+});
+export type UpdateConversationStatusInput = z.infer<typeof updateConversationStatusSchema>;

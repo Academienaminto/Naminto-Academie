@@ -28,6 +28,17 @@ export interface Dictionary {
     deconnexion: string;
     parametres: string;
     contact: string;
+    messages: string;
+  };
+  messagesPage: {
+    title: string;
+    empty: string;
+    back: string;
+    replyPlaceholder: string;
+    send: string;
+    sending: string;
+    close: string;
+    reopen: string;
   };
   home: {
     titleLine1: string;
@@ -271,6 +282,17 @@ export const dictionaries: Record<"fr" | "en", Dictionary> = {
       deconnexion: "Se déconnecter",
       parametres: "Paramètres",
       contact: "Contact",
+      messages: "Messages",
+    },
+    messagesPage: {
+      title: "Messages",
+      empty: "Aucune conversation pour le moment.",
+      back: "← Espace membre",
+      replyPlaceholder: "Répondre…",
+      send: "Envoyer",
+      sending: "…",
+      close: "Fermer la conversation",
+      reopen: "Rouvrir",
     },
     home: {
       titleLine1: "Un cursus initiatique,",
@@ -522,6 +544,17 @@ export const dictionaries: Record<"fr" | "en", Dictionary> = {
       deconnexion: "Log out",
       parametres: "Settings",
       contact: "Contact",
+      messages: "Messages",
+    },
+    messagesPage: {
+      title: "Messages",
+      empty: "No conversation yet.",
+      back: "← Member space",
+      replyPlaceholder: "Reply…",
+      send: "Send",
+      sending: "…",
+      close: "Close conversation",
+      reopen: "Reopen",
     },
     home: {
       titleLine1: "An initiatory path,",

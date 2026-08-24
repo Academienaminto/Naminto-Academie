@@ -1,21 +1,27 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { AppError } from "@/lib/errors";
 import { getCurrentUser } from "@/lib/auth/session";
 import { getConversation } from "@/modules/messaging/service";
 import { ReplyForm } from "@/components/forms/ReplyForm";
 import { StatusButton } from "@/components/forms/seuil/StatusButton";
+import { getDictionary } from "@/lib/i18n/locale";
 
-export default async function SeuilConversationPage({
+export default async function MembreConversationPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
   const user = await getCurrentUser();
+  const { t } = await getDictionary();
 
   let conversation;
   try {
-    conversation = await getConversation(id, user!.id, true);
+    // canManageAll=false : même vue Seuil ou non, cette page ne montre
+    // jamais que les conversations qui appartiennent réellement à
+    // l'utilisateur (anti-IDOR appliqué dans le service, pas ici).
+    conversation = await getConversation(id, user!.id, false);
   } catch (err) {
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();
@@ -24,24 +30,27 @@ export default async function SeuilConversationPage({
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-6 p-8">
+    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
+      <Link href="/membre/messages" className="text-sm text-text-muted hover:text-accent">
+        {t.messagesPage.back}
+      </Link>
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-semibold text-text">
-          Conversation
+          {t.messagesPage.title}
         </h1>
         {conversation.status === "FERMEE" ? (
           <StatusButton
             endpoint={`/api/v1/conversations/${conversation.id}/status`}
             status="OUVERTE"
-            label="Rouvrir"
+            label={t.messagesPage.reopen}
             variant="tertiary"
           />
         ) : (
           <StatusButton
             endpoint={`/api/v1/conversations/${conversation.id}/status`}
             status="FERMEE"
-            label="Fermer la conversation"
-            variant="secondary"
+            label={t.messagesPage.close}
+            variant="tertiary"
           />
         )}
       </div>
@@ -52,8 +61,8 @@ export default async function SeuilConversationPage({
             key={message.id}
             className={`max-w-lg rounded-lg border border-border p-3 text-sm ${
               message.senderId === conversation.userId
-                ? "self-start bg-surface"
-                : "self-end bg-primary"
+                ? "self-end bg-primary"
+                : "self-start bg-surface"
             }`}
           >
             {message.content}
@@ -61,7 +70,12 @@ export default async function SeuilConversationPage({
         ))}
       </ul>
 
-      <ReplyForm conversationId={conversation.id} />
+      <ReplyForm
+        conversationId={conversation.id}
+        placeholder={t.messagesPage.replyPlaceholder}
+        sendLabel={t.messagesPage.send}
+        sendingLabel={t.messagesPage.sending}
+      />
     </main>
   );
 }
