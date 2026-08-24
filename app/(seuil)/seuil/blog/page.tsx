@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { listAllPosts } from "@/modules/blog/service";
 import { CreatePostForm } from "@/components/forms/seuil/CreatePostForm";
 import { StatusButton } from "@/components/forms/seuil/StatusButton";
@@ -22,20 +23,28 @@ export default async function SeuilBlogPage() {
                   {post.status}
                 </p>
               </div>
-              {post.status === "PUBLIE" ? (
-                <StatusButton
-                  endpoint={`/api/v1/blog/posts/${post.id}/status`}
-                  status="RETIRE"
-                  label="Retirer"
-                  variant="tertiary"
-                />
-              ) : (
-                <StatusButton
-                  endpoint={`/api/v1/blog/posts/${post.id}/status`}
-                  status="PUBLIE"
-                  label="Publier"
-                />
-              )}
+              <div className="flex items-center gap-2">
+                <Link
+                  href={`/seuil/blog/${post.id}`}
+                  className="rounded-md border border-border px-3 py-1.5 text-sm text-text hover:bg-background"
+                >
+                  Commentaires
+                </Link>
+                {post.status === "PUBLIE" ? (
+                  <StatusButton
+                    endpoint={`/api/v1/blog/posts/${post.id}/status`}
+                    status="RETIRE"
+                    label="Retirer"
+                    variant="tertiary"
+                  />
+                ) : (
+                  <StatusButton
+                    endpoint={`/api/v1/blog/posts/${post.id}/status`}
+                    status="PUBLIE"
+                    label="Publier"
+                  />
+                )}
+              </div>
             </li>
           ))}
           {posts.length === 0 && (

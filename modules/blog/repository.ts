@@ -58,6 +58,16 @@ export function listCommentsForPost(blogPostId: string) {
   });
 }
 
+/** Vue Seuil : tous les statuts (y compris masqués/supprimés), pour la
+ * modération — jamais utilisée pour l'affichage public. */
+export function listAllCommentsForPost(blogPostId: string) {
+  return db.comment.findMany({
+    where: { blogPostId },
+    orderBy: { createdAt: "asc" },
+    include: { user: { include: { profile: true } } },
+  });
+}
+
 export function findCommentById(id: string) {
   return db.comment.findUnique({ where: { id } });
 }

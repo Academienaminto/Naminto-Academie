@@ -46,7 +46,9 @@ export async function getPost(id: string, canManageAll: boolean) {
       "blog.postNotFound",
     );
   }
-  const comments = await repo.listCommentsForPost(id);
+  const comments = canManageAll
+    ? await repo.listAllCommentsForPost(id)
+    : await repo.listCommentsForPost(id);
   return { post, comments };
 }
 
