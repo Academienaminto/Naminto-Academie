@@ -1,5 +1,9 @@
 import type { FileType } from "@prisma/client";
 
+// Règles de classification et de taille pour l'upload générique
+// (modules/files/service.ts) : associe un mimeType client à un FileType
+// interne et plafonne la taille acceptée par type.
+//
 // RÈGLES MÉTIER — valeurs par défaut (23/08/2026, configurables) : les
 // limites définitives doivent être fixées en configuration (PROMPT MASTER
 // STOCKAGE §note) ; celles-ci débloquent le développement en attendant.

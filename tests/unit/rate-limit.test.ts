@@ -22,11 +22,11 @@ describe("isRateLimited", () => {
 });
 
 describe("getClientIp", () => {
-  it("uses the first address in x-forwarded-for", () => {
+  it("uses the last address in x-forwarded-for (added by the trusted proxy, not client-spoofable)", () => {
     const req = new Request("http://localhost", {
       headers: { "x-forwarded-for": "203.0.113.5, 70.41.3.18" },
     });
-    expect(getClientIp(req)).toBe("203.0.113.5");
+    expect(getClientIp(req)).toBe("70.41.3.18");
   });
 
   it("falls back to x-real-ip then unknown", () => {

@@ -1,5 +1,11 @@
 import { db } from "@/lib/db";
 
+// Accès base de données du moteur de progression (modules/progress/service.ts) :
+// lecture de l'état cours/éligibilité, octroi d'éligibilité au cours
+// suivant, passage de niveau + grade, progression de partie/formation.
+// Aucune règle métier ici — uniquement des requêtes Prisma ; les décisions
+// (quand débloquer, quand valider un niveau/une partie) restent côté service.
+
 export function findCourseWithProgress(courseId: string, userId: string) {
   return db.course.findUnique({
     where: { id: courseId },
@@ -57,6 +63,11 @@ export function findEnrollmentForCourseProgress(courseProgressId: string) {
     .then((cp) => cp?.enrollmentId ?? null);
 }
 
+// upsert sur la contrainte @@unique([userId, courseId]) de CourseProgress :
+// contrairement au comptage de tentatives de quiz ou à la création
+// d'inscription (voir TODO dans modules/quiz et modules/enrollment), cet
+// octroi d'éligibilité est nativement race-safe même en cas d'appels
+// concurrents, la contrainte unique faisant office de verrou côté base.
 export function grantEligibility(
   userId: string,
   courseId: string,

@@ -1,5 +1,12 @@
 import { db } from "@/lib/db";
 
+// Couche d'accès aux données pour la gestion des membres côté Seuil :
+// requêtes/écritures Prisma brutes, sans règle métier (celle-ci vit dans
+// modules/members/service.ts, seul appelant attendu). Les fonctions
+// markForDeletion/restoreAccount utilisent $transaction pour garder
+// Account et AccountDeletion/AccountRestoration synchronisés en cas
+// d'échec partiel — ne pas les scinder en appels séparés.
+
 /** ESPACE DU SEUIL §10 — recherche par email, téléphone ou nom, sans avoir
  * à parcourir manuellement l'ensemble des membres. */
 export function search(query: string | undefined) {

@@ -13,7 +13,7 @@ export default async function SeuilBookDetailPage({
 
   let book;
   try {
-    book = await getBook(id);
+    book = await getBook(id, true); // page Seuil : doit voir les brouillons
   } catch (err) {
     if (err instanceof AppError && err.code === "RESOURCE_NOT_FOUND") {
       notFound();

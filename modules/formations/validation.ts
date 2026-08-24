@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+// Schémas Zod de la structure éditoriale FORMATION → PARTIE → COURS
+// (création/mise à jour, consommés par modules/formations/service.ts).
 // RÈGLES MÉTIER §18 : une formation est indépendante du cursus initiatique
 // et porte elle-même le prix — ses parties et cours n'en portent jamais
 // (contrairement aux cours du cursus, qui peuvent être individuellement

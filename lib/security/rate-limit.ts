@@ -36,14 +36,25 @@ export function isRateLimited(key: string, limit: number, windowMs: number): boo
   return timestamps.length > limit;
 }
 
-/** IP source à partir des en-têtes de proxy standard — dégrade proprement
+/**
+ * IP source à partir des en-têtes de proxy standard — dégrade proprement
  * (limite alors globale plutôt que par IP) si l'en-tête est absent, ce qui
  * n'arrive pas derrière un déploiement standard (Vercel, la plupart des
- * reverse proxies). */
+ * reverse proxies).
+ *
+ * On prend la DERNIÈRE entrée de x-forwarded-for, pas la première : chaque
+ * proxy de la chaîne AJOUTE l'IP de qui vient de se connecter à lui, il
+ * n'écrase jamais ce que le client a fourni. La première entrée est donc
+ * entièrement falsifiable par le client (il suffit d'envoyer soi-même
+ * l'en-tête avec une IP arbitraire) ; seule la dernière entrée — ajoutée
+ * par le proxy de confiance juste avant d'atteindre ce serveur — reflète
+ * l'IP réelle du pair TCP, que le client ne peut pas usurper.
+ */
 export function getClientIp(req: Request): string {
   const forwarded = req.headers.get("x-forwarded-for");
   if (forwarded) {
-    return forwarded.split(",")[0].trim();
+    const parts = forwarded.split(",").map((p) => p.trim());
+    return parts[parts.length - 1];
   }
   return req.headers.get("x-real-ip") ?? "unknown";
 }

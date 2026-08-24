@@ -18,6 +18,10 @@ export async function enroll(userId: string, cursusId: string) {
     );
   }
 
+  // TODO: race condition — voir modules/enrollment/repository.ts
+  // findEnrollment/createEnrollment : ce contrôle "existe déjà" puis
+  // création n'est pas atomique et Enrollment n'a pas de contrainte
+  // @@unique(userId, cursusId) pour rattraper une double écriture.
   const existing = await repo.findEnrollment(userId, cursusId);
   if (existing) {
     throw new AppError(

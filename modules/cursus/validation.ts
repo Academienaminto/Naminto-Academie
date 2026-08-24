@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// Schémas Zod (création/mise à jour de cursus, niveau, cours, publication,
+// ajout de version) + constantes structurelles du cursus initiatique.
+// LEVEL_COUNT/COURSES_PER_LEVEL encodent l'invariant de taille fixe que
+// modules/progress/service.ts exploite pour détecter la fin d'un niveau
+// (position === COURSES_PER_LEVEL) sans avoir à interroger la base.
 // ARCHITECTURE GÉNÉRALE §12, §93 : structure fixe 9 niveaux × 6 cours.
 export const LEVEL_COUNT = 9;
 export const COURSES_PER_LEVEL = 6;

@@ -5,6 +5,13 @@ import type {
   CreateFormationPartInput,
 } from "@/modules/formations/validation";
 
+// Accès base de données de la structure éditoriale FORMATION → PARTIE →
+// COURS (RÈGLES MÉTIER §18-20, orchestrée par modules/formations/service.ts),
+// plus l'inscription (gratuite) à une formation. Distinct de
+// modules/enrollment/repository.ts, qui gère l'inscription au cursus
+// initiatique — les deux parcours ont des tables Enrollment communes mais
+// des règles d'accès et de progression séparées.
+
 const withStructure = {
   parts: {
     orderBy: { position: "asc" as const },
@@ -136,6 +143,12 @@ export function findFormationCourseById(id: string) {
   });
 }
 
+// TODO: race condition — Enrollment n'a pas de contrainte @@unique sur
+// (userId, formationId) dans le schéma Prisma ; deux requêtes concurrentes
+// (ex. double-clic ou double navigation) peuvent chacune passer le
+// find*Enrollment de modules/formations/service.ts#enroll avant que l'une
+// n'écrive, créant deux inscriptions pour le même utilisateur/formation.
+// Pas encore protégé par une contrainte unique ni une transaction.
 export function findEnrollment(userId: string, formationId: string) {
   return db.enrollment.findFirst({ where: { userId, formationId } });
 }

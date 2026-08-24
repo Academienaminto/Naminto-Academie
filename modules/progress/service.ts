@@ -7,6 +7,14 @@ import {
   ensureSessionsForPart,
 } from "@/modules/sessions/service";
 
+// Moteur central d'accès et de progression : calcule l'état d'accès réel à
+// un cours (jamais celui envoyé par le frontend), active délai + séances à
+// la première entrée dans un cours ACCESSIBLE, puis fait avancer
+// l'éligibilité (cursus ou formation) après une validation de quiz. Couvre
+// les étapes ACCÈS → PROGRESSION → ACCÈS SUIVANT du flux PROMPT MASTER
+// PROGRESSION PÉDAGOGIQUE (CONTENU → APPRENTISSAGE → QUIZ → CORRECTION →
+// SCORE → VALIDATION → PROGRESSION → ACCÈS SUIVANT).
+
 /**
  * Résumé d'un cours pour l'écran membre : titre/description propres au
  * cours, et le produit commercial à afficher pour un éventuel achat —
@@ -84,6 +92,14 @@ export async function getCourseAccessState(
     );
   }
 
+  // Machine à états de COURSE_PROGRESS.eligibilityStatus : pas de ligne (ou
+  // NON_ELIGIBLE) → ELIGIBLE, accordé soit à l'inscription pour le premier
+  // cours (modules/enrollment ou modules/formations#enroll), soit par
+  // advanceEligibility ci-dessous après validation du cours précédent →
+  // FERME, terminal, déclenché uniquement par
+  // modules/deadlines/service.ts#closeCourseForDelay (dépassement de
+  // délai) ; ne redevient jamais ELIGIBLE tout seul, une nouvelle
+  // acquisition peut être nécessaire (§26).
   const progress = course.courseProgress[0];
   if (progress?.eligibilityStatus === "FERME") {
     // RÈGLES MÉTIER §26 : fermé pour dépassement de délai — distinct d'un

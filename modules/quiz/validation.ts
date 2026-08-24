@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+// Schémas Zod du moteur de quiz : création de quiz/questions par le Seuil,
+// soumission d'une tentative par l'apprenant (choix + fileId de preuve déjà
+// uploadé, jamais un score ou un verdict), et décision de revue d'une
+// preuve pratique. Consommés par modules/quiz/service.ts.
+
 export const createQuizSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),

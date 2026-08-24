@@ -543,6 +543,12 @@ model QuizAttempt {
   practicalEvidences PracticalEvidence[]
   validations        Validation[]
 
+  // Rend le calcul incrémental de attemptNumber (compte-puis-crée dans
+  // modules/quiz/service.ts#startAttempt) sûr en cas d'appels concurrents :
+  // deux requêtes qui liraient le même compteur ne peuvent pas insérer le
+  // même (userId, quizId, attemptNumber) — l'une échoue avec une violation
+  // d'unicité (P2002), gérée par une nouvelle tentative bornée côté service.
+  @@unique([userId, quizId, attemptNumber])
   @@map("quiz_attempts")
 }
 

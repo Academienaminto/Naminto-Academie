@@ -22,21 +22,31 @@ export function StatusButton({
 }: StatusButtonProps) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function onClick() {
     setPending(true);
-    await fetch(endpoint, {
+    setError(null);
+    const res = await fetch(endpoint, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
+    const result = await res.json();
     setPending(false);
+    if (!result.success) {
+      setError(result.error.message);
+      return;
+    }
     router.refresh();
   }
 
   return (
-    <Button variant={variant} onClick={onClick} disabled={pending}>
-      {pending ? "…" : label}
-    </Button>
+    <div className="flex flex-col items-start gap-1">
+      <Button variant={variant} onClick={onClick} disabled={pending}>
+        {pending ? "…" : label}
+      </Button>
+      {error && <p className="text-xs text-error">{error}</p>}
+    </div>
   );
 }

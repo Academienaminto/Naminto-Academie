@@ -111,6 +111,10 @@ export class CinetPayProvider implements PaymentProvider {
       data?: { status?: string; amount?: number; currency?: string };
     };
 
+    // Tout statut brut autre que ACCEPTED/REFUSED (y compris une valeur
+    // absente ou inattendue) retombe sur EN_ATTENTE plutôt que CONFIRME :
+    // par défaut on n'accorde jamais l'accès (fail-safe), on attend une
+    // confirmation explicite du prestataire.
     const rawStatus = body.data?.status;
     const status: PaymentStatusResult["status"] =
       rawStatus === "ACCEPTED"
@@ -209,6 +213,10 @@ export class AdullamProvider implements PaymentProvider {
       data?: { status?: string; amount?: number; currency?: string };
     };
 
+    // Tout statut brut autre que ACCEPTED/REFUSED (y compris une valeur
+    // absente ou inattendue) retombe sur EN_ATTENTE plutôt que CONFIRME :
+    // par défaut on n'accorde jamais l'accès (fail-safe), on attend une
+    // confirmation explicite du prestataire.
     const rawStatus = body.data?.status;
     const status: PaymentStatusResult["status"] =
       rawStatus === "ACCEPTED"

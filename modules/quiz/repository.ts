@@ -1,6 +1,14 @@
 import { db } from "@/lib/db";
 import type { CreateQuestionInput, CreateQuizInput } from "@/modules/quiz/validation";
 
+// Accès base de données du moteur de quiz : tentatives, réponses à choix,
+// preuves pratiques et leur revue par le Seuil. Deux vues distinctes du
+// même quiz (findQuizByCourseIdWithQuestions vs findQuizForAttempt)
+// séparent volontairement l'admin (isCorrect visible) de l'apprenant
+// (jamais isCorrect avant correction, §9 RÈGLES DU QUIZ) — étapes QUIZ →
+// CORRECTION → SCORE du flux pédagogique, orchestrées par
+// modules/quiz/service.ts.
+
 export function findCourseById(courseId: string) {
   return db.course.findUnique({ where: { id: courseId } });
 }
@@ -97,6 +105,13 @@ export function createQuestion(quizId: string, input: CreateQuestionInput) {
   });
 }
 
+// TODO: race condition — utilisé par modules/quiz/service.ts#startAttempt
+// pour calculer attemptNumber (= count + 1) avant createAttempt. QuizAttempt
+// n'a pas de contrainte @@unique sur (userId, quizId, attemptNumber) dans le
+// schéma Prisma, donc deux démarrages concurrents peuvent tous deux lire le
+// même count et créer deux tentatives avec le même attemptNumber (ou faire
+// dépasser MAX_ATTEMPTS de facto). Pas encore protégé par une contrainte
+// unique ni une transaction.
 export function countAttempts(userId: string, quizId: string) {
   return db.quizAttempt.count({ where: { userId, quizId } });
 }

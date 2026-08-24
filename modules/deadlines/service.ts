@@ -9,6 +9,15 @@ import {
   addDays,
 } from "@/modules/deadlines/validation";
 
+// Moteur du système de délai à 3 alertes : démarre le délai (30 jours par
+// défaut) à l'activation d'un cours, balaie périodiquement les délais en
+// retard pour déclencher ALERTE 1 (J+30) → ALERTE 2 (J+37) → ALERTE 3 =
+// fermeture (J+44), et permet au Seuil de réinitialiser un délai sans
+// perdre l'historique. C'est le mécanisme qui peut faire régresser un cours
+// autrement ACCESSIBLE vers CLOSED_FOR_DELAY (voir modules/progress/service.ts
+// getCourseAccessState) — verrou de sécurité du flux PROGRESSION → ACCÈS
+// SUIVANT plutôt qu'une étape en soi.
+
 // RÈGLES MÉTIER §23 : le délai doit être contrôlé par le système, jamais
 // uniquement affiché par l'interface. Démarré à l'activation du cours
 // (première fois qu'il devient ACCESSIBLE pour l'apprenant) — voir l'appel
@@ -56,6 +65,13 @@ async function closeCourseForDelay(userId: string, courseId: string) {
  */
 export async function processDueDeadlines() {
   const now = new Date();
+  // cutoff = "il y a ALERT_INTERVAL_DAYS jours" (7 par défaut). Réutilisé
+  // pour ALERTE 2 ET ALERTE 3 car l'écart entre chaque étape est le même :
+  // warning1At <= cutoff ⇒ ALERTE 1 envoyée il y a ≥ 7 jours (→ ALERTE 2,
+  // J+37) ; warning2At <= cutoff ⇒ ALERTE 2 envoyée il y a ≥ 7 jours
+  // (→ ALERTE 3/fermeture, J+44). dueAt lui-même est déjà à J+30 (calculé
+  // dans ensureDeadlineStarted via DEADLINE_DURATION_DAYS), donc stage1 ne
+  // compare que dueAt à "maintenant", pas à un cutoff.
   const cutoff = addDays(now, -ALERT_INTERVAL_DAYS);
   const result = { warning1: 0, warning2: 0, closed: 0 };
 

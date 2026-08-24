@@ -1,5 +1,12 @@
 import { db } from "@/lib/db";
 
+// Accès base de données des séances pédagogiques (RÈGLES MÉTIER §21-22,
+// orchestrées par modules/sessions/service.ts) : 3 séances par cours du
+// cursus, ou 3 par partie pour une formation (jamais par cours de
+// formation). Voir le commentaire sur createSessionsForCourse pour le rôle
+// de skipDuplicates + des contraintes @@unique dans la protection contre
+// les appels concurrents.
+
 export const SESSIONS_PER_UNIT = 3;
 
 export function findSessionsForCourse(userId: string, courseId: string) {
@@ -34,6 +41,10 @@ export function createSessionsForCourse(userId: string, courseId: string) {
   });
 }
 
+/** Même principe que createSessionsForCourse ci-dessus (skipDuplicates +
+ * contrainte @@unique([userId, formationPartId, sessionNumber]) en base) —
+ * niveau "partie de formation" plutôt que "cours du cursus", RÈGLES
+ * MÉTIER §21. */
 export function createSessionsForPart(userId: string, formationPartId: string) {
   return db.learningSession.createMany({
     data: Array.from({ length: SESSIONS_PER_UNIT }, (_, i) => ({

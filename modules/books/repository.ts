@@ -1,6 +1,14 @@
 import { db } from "@/lib/db";
 import type { CreateBookInput } from "@/modules/books/validation";
 
+// Couche d'accès aux données du module Livres (Book, BookVersion, et
+// lecture d'Access/écriture de Download côté bibliothèque). Consommée
+// uniquement par modules/books/service.ts, qui porte les règles métier
+// (RÈGLES MÉTIER §39-42) — ce fichier ne fait aucune vérification de
+// droit d'accès lui-même, il exécute ce que le service lui demande.
+// Invariant à préserver : createBook crée le Product associé dans la même
+// transaction (un livre payant sans Product ne serait jamais achetable).
+
 export function listPublishedBooks() {
   return db.book.findMany({
     where: { status: "PUBLIE" },

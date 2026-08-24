@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { AppError } from "@/lib/errors";
 import { recordEvent } from "@/lib/events/record";
 import { recordAudit } from "@/lib/audit/record";
@@ -9,6 +10,14 @@ import type {
   CreateQuizInput,
   SubmitAttemptInput,
 } from "@/modules/quiz/validation";
+
+// Moteur du quiz : étapes QUIZ → CORRECTION → SCORE → VALIDATION du flux
+// PROMPT MASTER PROGRESSION PÉDAGOGIQUE. Démarre/corrige une tentative
+// (correction et score calculés exclusivement côté serveur, §31 SCORE),
+// gère la revue des preuves pratiques par le Seuil, et déclenche la
+// cascade de progression (modules/progress/service.ts) une fois un cours
+// validé — que la validation vienne d'une correction immédiate (quiz 100%
+// à choix) ou différée (dernière preuve pratique approuvée).
 
 // RÈGLES MÉTIER — valeur par défaut (23/08/2026, ajustable) : 3 tentatives
 // avant blocage et nécessité de contacter le Seuil.
@@ -128,26 +137,47 @@ export async function startAttempt(userId: string, quizId: string) {
     );
   }
 
-  const attemptCount = await repo.countAttempts(userId, quizId);
-  if (attemptCount >= MAX_ATTEMPTS) {
-    throw new AppError(
-      "QUIZ_NOT_AVAILABLE",
-      "Nombre de tentatives maximum atteint. Contactez le Seuil.",
-      undefined,
-      "quiz.maxAttemptsReached",
-    );
-  }
-
   const progress = await repo.findCourseProgress(userId, quiz.courseId);
 
-  const attempt = await repo.createAttempt(
-    userId,
-    quizId,
-    progress?.id,
-    attemptCount + 1,
-  );
+  // Compte-puis-crée non atomique par nature (deux requêtes concurrentes
+  // peuvent lire le même compteur) : on s'appuie sur la contrainte unique
+  // (userId, quizId, attemptNumber) en base pour détecter la collision — si
+  // la création échoue avec P2002, une autre requête a pris ce numéro entre
+  // temps, donc on relit le compteur (désormais à jour) et on retente,
+  // jusqu'à un nombre borné d'essais pour ne jamais boucler indéfiniment.
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const attemptCount = await repo.countAttempts(userId, quizId);
+    if (attemptCount >= MAX_ATTEMPTS) {
+      throw new AppError(
+        "QUIZ_NOT_AVAILABLE",
+        "Nombre de tentatives maximum atteint. Contactez le Seuil.",
+        undefined,
+        "quiz.maxAttemptsReached",
+      );
+    }
 
-  return { attempt, quiz };
+    try {
+      const created = await repo.createAttempt(
+        userId,
+        quizId,
+        progress?.id,
+        attemptCount + 1,
+      );
+      return { attempt: created, quiz };
+    } catch (err) {
+      if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  throw new AppError(
+    "CONFLICT",
+    "Impossible de démarrer la tentative pour le moment, réessayez.",
+    undefined,
+    "quiz.attemptConflict",
+  );
 }
 
 /**

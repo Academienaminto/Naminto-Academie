@@ -1,6 +1,24 @@
 import type { Product } from "@prisma/client";
 import { db } from "@/lib/db";
 
+// Couche d'accès aux données du module Paiements : Product, Order,
+// Payment, PaymentEvent et Access. Consommée uniquement par
+// modules/payments/service.ts, qui porte les règles métier (jamais de
+// vérification de droit ici, seulement de la persistance).
+//
+// Order / Payment / Access sont volontairement 3 entités distinctes plutôt
+// qu'une seule table : Order fige ce qui a été commandé et à quel prix
+// (§24, indépendant du prix courant du produit) ; Payment trace la
+// tentative de règlement effective avec le prestataire (peut échouer,
+// être retentée) ; Access est le seul et unique élément que le reste de
+// l'app doit consulter pour savoir « cet utilisateur a-t-il le droit
+// d'utiliser ce produit ? », sans avoir à connaître l'historique des
+// commandes/paiements qui y ont mené.
+//
+// Invariant critique : confirmPaymentAndGrantAccess ci-dessous est le SEUL
+// endroit du code qui doit faire passer un Access à ACTIF pour un achat.
+// Ne pas dupliquer cette logique ailleurs.
+
 export function findProductById(id: string) {
   return db.product.findUnique({ where: { id } });
 }
@@ -69,6 +87,10 @@ export function setPaymentProviderReference(
   });
 }
 
+// providerReference est unique en base : c'est la clé utilisée par le
+// webhook pour retrouver le Payment correspondant à une notification, et
+// c'est ce lookup + le check de statut déjà CONFIRME (service.ts) qui
+// rendent le traitement du webhook idempotent.
 export function findPaymentByProviderReference(providerReference: string) {
   return db.payment.findUnique({
     where: { providerReference },
@@ -84,6 +106,26 @@ export function recordPaymentEvent(
 ) {
   return db.paymentEvent.create({
     data: { paymentId, type, status, payload: payload as never },
+  });
+}
+
+/**
+ * Applique l'échec d'un paiement : Payment → ÉCHOUÉ, Order → ÉCHEC. Utilisé
+ * aussi bien pour un statut ECHOUE explicite renvoyé par le prestataire que
+ * pour un montant/devise vérifié qui ne correspond pas à la commande — dans
+ * les deux cas, aucun Access n'est accordé (STACK TECHNIQUE §74).
+ */
+export async function markPaymentFailed(paymentId: string) {
+  return db.$transaction(async (tx) => {
+    const payment = await tx.payment.update({
+      where: { id: paymentId },
+      data: { status: "ECHOUE", failedAt: new Date() },
+    });
+    await tx.order.update({
+      where: { id: payment.orderId },
+      data: { status: "ECHEC" },
+    });
+    return payment;
   });
 }
 

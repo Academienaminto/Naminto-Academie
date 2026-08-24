@@ -5,6 +5,12 @@ import type {
   CreateLevelInput,
 } from "@/modules/cursus/validation";
 
+// Accès base de données de la structure éditoriale CURSUS → NIVEAU → COURS
+// (gérée par modules/cursus/service.ts). Distinct de la progression d'un
+// apprenant (modules/progress) : ici on lit/écrit uniquement le contenu tel
+// que rédigé par le Seuil, jamais l'éligibilité ou l'avancement d'un
+// utilisateur — c'est la couche CONTENU du flux pédagogique, pas ACCÈS.
+
 export function listPublishedCursus() {
   return db.cursus.findMany({
     where: { status: "PUBLIE" },

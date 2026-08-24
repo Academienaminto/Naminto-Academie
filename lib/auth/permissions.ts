@@ -5,6 +5,9 @@ import { db } from "@/lib/db";
 // CONDITION MÉTIER → ACTION → AUTORISATION/REFUS.
 // Le catalogue des rôles/permissions fait foi dans RÔLES ET PERMISSIONS
 // NAMINTO ACADÉMIE.docx et est chargé en base par prisma/seed.ts.
+// Ces fonctions sont les seules à interroger UserRole/RolePermission ;
+// lib/auth/guards.ts (requirePermission, requireSeuil) s'appuie dessus et
+// ne doit jamais être contourné par une vérification de rôle ad hoc ailleurs.
 
 export async function userHasRole(
   userId: string,

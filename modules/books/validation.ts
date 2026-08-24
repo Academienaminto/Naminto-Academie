@@ -1,8 +1,11 @@
 import { z } from "zod";
 
-// RÈGLES MÉTIER §39-41 : un livre gratuit ne nécessite jamais d'achat ;
-// un livre payant doit avoir un prix. L'achat d'un livre est indépendant
-// du cursus et des formations — aucun quiz ni progression pédagogique.
+// Schémas de validation d'entrée (Zod) pour les routes du module Livres —
+// appelés par les routes app/api/v1/books/** avant d'atteindre
+// modules/books/service.ts. RÈGLES MÉTIER §39-41 : un livre gratuit ne
+// nécessite jamais d'achat ; un livre payant doit avoir un prix. L'achat
+// d'un livre est indépendant du cursus et des formations — aucun quiz ni
+// progression pédagogique.
 export const createBookSchema = z
   .object({
     title: z.string().min(1).max(200),

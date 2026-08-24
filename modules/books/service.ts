@@ -7,6 +7,11 @@ import type { PublishInput } from "@/modules/cursus/validation";
 // RÈGLES MÉTIER §39-42 : bibliothèque indépendante du cursus et des
 // formations, sans quiz ni progression pédagogique — juste ACHAT (si
 // payant) → DROIT DE TÉLÉCHARGEMENT → TÉLÉCHARGEMENT.
+//
+// Ce module ne fait QUE consommer le DROIT D'ACCÈS : l'ACHAT → PAIEMENT →
+// VÉRIFICATION → CONFIRMATION (ARCHITECTURE GÉNÉRALE §6) qui crée l'Access
+// est entièrement porté par modules/payments. getDownloadUrl ci-dessous se
+// contente de lire un Access déjà ACTIF, jamais de le créer.
 
 export function listCatalog() {
   return repo.listPublishedBooks();
@@ -16,9 +21,15 @@ export function listAll() {
   return repo.listAllBooks();
 }
 
-export async function getBook(id: string) {
+/**
+ * canManageAll=false (visiteur/membre, GET public) : un livre non publié
+ * répond 404 comme s'il n'existait pas, pour ne pas laisser deviner son
+ * titre/prix avant publication officielle. Le Seuil (MANAGE_BOOKS) passe
+ * canManageAll=true pour prévisualiser/gérer les brouillons.
+ */
+export async function getBook(id: string, canManageAll = false) {
   const book = await repo.findBookById(id);
-  if (!book) {
+  if (!book || (!canManageAll && book.status !== "PUBLIE")) {
     throw new AppError(
       "RESOURCE_NOT_FOUND",
       "Livre introuvable.",
@@ -34,14 +45,14 @@ export function createBook(input: CreateBookInput) {
 }
 
 export async function setBookStatus(id: string, input: PublishInput) {
-  await getBook(id); // 404 si absent
+  await getBook(id, true); // 404 si absent ; Seuil, doit voir les brouillons
   return repo.updateBookStatus(id, input.status);
 }
 
 /** Chaque version ajoutée devient la version courante pour le
  * téléchargement (numérotée automatiquement) — voir RÈGLES MÉTIER §42. */
 export async function addVersion(bookId: string, input: AddBookVersionInput) {
-  await getBook(bookId); // 404 si absent
+  await getBook(bookId, true); // 404 si absent ; Seuil, doit voir les brouillons
   const latest = await repo.findLatestVersion(bookId);
   const versionNumber = (latest?.versionNumber ?? 0) + 1;
   return repo.createVersion(bookId, versionNumber, input.fileId);
@@ -75,6 +86,8 @@ export async function getDownloadUrl(userId: string, bookId: string) {
 
   let accessId: string | null = null;
   if (!book.isFree) {
+    // Un livre payant n'a qu'un seul Product associé, créé par
+    // repo.createBook au moment de la création du livre — d'où l'index 0.
     const product = book.products[0];
     if (!product) {
       throw new AppError(
@@ -84,6 +97,9 @@ export async function getDownloadUrl(userId: string, bookId: string) {
         "books.purchaseRequired",
       );
     }
+    // Le droit d'accès est relu en base à partir du userId authentifié
+    // (jamais un paramètre envoyé par le client) : c'est la seule source de
+    // vérité pour savoir si ce livre payant a été acheté.
     const access = await repo.findActiveAccessForProduct(userId, product.id);
     if (!access) {
       throw new AppError(

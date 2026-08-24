@@ -8,11 +8,23 @@ import { classifyMimeType, MAX_SIZE_BY_TYPE } from "@/modules/files/validation";
 // permission (fait par la route) ; 3. valider le fichier ; 4. stocker ;
 // 5. enregistrer les métadonnées. Le contenu binaire ne transite jamais
 // par la base de données — seule la référence de stockage y est conservée.
+//
+// Module de stockage générique, distinct de books/payments : sert de
+// brique bas-niveau pour tout fichier privé (pièce jointe, document
+// interne, etc.), y compris pour les fichiers de livre référencés depuis
+// modules/books (BookVersion.fileId). getDownloadUrl ci-dessous applique
+// son propre contrôle d'accès par propriété (uploadedBy) — books/service.ts
+// a son propre contrôle par Access et n'appelle pas cette fonction.
 
 export async function uploadFile(
   userId: string,
   file: { name: string; mimeType: string; size: number; buffer: Buffer },
 ) {
+  // TODO: file.mimeType vient du Content-Type déclaré par le client
+  // (multipart/form-data) et n'est jamais confronté à la signature réelle
+  // du fichier (magic bytes) — un client pourrait mentir sur le type pour
+  // contourner classifyMimeType/MAX_SIZE_BY_TYPE. À vérifier si un contrôle
+  // par contenu est requis avant mise en production.
   const type = classifyMimeType(file.mimeType);
   if (!type) {
     throw new AppError(
@@ -69,6 +81,11 @@ export async function getDownloadUrl(
       "files.notFound",
     );
   }
+  // Garde-fou anti-IDOR : un fileId est un identifiant devinable/énumérable,
+  // donc la route ne peut pas se contenter de vérifier qu'il existe. Sans ce
+  // contrôle de propriété (ou du rôle canManageAll pour le staff), n'importe
+  // quel membre authentifié pourrait télécharger le fichier privé d'un
+  // autre utilisateur en changeant juste l'id dans l'URL.
   if (!canManageAll && file.uploadedBy !== userId) {
     throw new AppError(
       "FORBIDDEN",

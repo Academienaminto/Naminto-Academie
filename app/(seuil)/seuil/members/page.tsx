@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { search } from "@/modules/members/service";
 import { MemberSearchForm } from "@/components/forms/seuil/MemberSearchForm";
@@ -31,7 +32,9 @@ export default async function SeuilMembersPage({
     <main className="flex flex-1 flex-col gap-6 p-8">
       <h1 className="font-heading text-2xl font-semibold text-text">Membres</h1>
 
-      <MemberSearchForm />
+      <Suspense>
+        <MemberSearchForm />
+      </Suspense>
 
       <ul className="flex flex-col gap-3">
         {members.map((member) => {

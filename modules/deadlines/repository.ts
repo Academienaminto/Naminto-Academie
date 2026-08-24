@@ -1,5 +1,12 @@
 import { db } from "@/lib/db";
 
+// Accès base de données du système de délai à 3 alertes (calculs et
+// orchestration dans modules/deadlines/service.ts). Chaque findDueForStageN
+// correspond à une étape de la cascade ALERTE 1 (J+30) → ALERTE 2 (J+37) →
+// ALERTE 3 = fermeture (J+44) — voir RÈGLES MÉTIER §23-26. Aucun calcul de
+// date ici, uniquement des requêtes ; les dates elles-mêmes sont calculées
+// côté service à partir de DEADLINE_DURATION_DAYS/ALERT_INTERVAL_DAYS.
+
 export function findActiveDeadline(userId: string, courseId: string) {
   return db.deadline.findFirst({ where: { userId, courseId, status: "EN_COURS" } });
 }

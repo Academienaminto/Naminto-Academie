@@ -1,5 +1,5 @@
 import { AppError } from "@/lib/errors";
-import { hashPassword, verifyPassword } from "@/lib/auth/hash";
+import { hashPassword, verifyPassword, wasteTimeLikeVerify } from "@/lib/auth/hash";
 import {
   createSession,
   destroyAllSessions,
@@ -19,6 +19,14 @@ import {
 } from "@/modules/auth/repository";
 import { restoreOwnAccount as restoreOwnAccountMembership } from "@/modules/members/service";
 import type { LoginInput, RegisterInput } from "@/modules/auth/validation";
+
+// Cœur métier de l'authentification : inscription, connexion, vérification
+// d'email, mot de passe oublié/réinitialisation, déconnexion, restauration
+// de compte par son titulaire. Orchestre lib/auth/* (hash, session, tokens)
+// et modules/auth/repository.ts ; ne fait jamais d'accès Prisma direct.
+// Invariant transverse : ne jamais laisser fuir d'information permettant
+// l'énumération de comptes (§31) — voir les commentaires par fonction
+// ci-dessous pour le comportement exact attendu à chaque point d'entrée.
 
 /**
  * Inscription — VISITEUR → INSCRIPTION → COMPTE → AUTHENTIFICATION → MEMBRE.
@@ -74,6 +82,10 @@ export async function login(input: LoginInput) {
   );
 
   if (!user || !user.passwordAuth) {
+    // §10/§31 : on paie le même coût Argon2id que le chemin "mot de passe
+    // incorrect" ci-dessous, sinon la latence de réponse trahit à elle
+    // seule l'existence du compte malgré le message d'erreur identique.
+    await wasteTimeLikeVerify(input.password);
     throw genericError;
   }
 
@@ -144,6 +156,7 @@ export async function restoreOwnAccount(input: LoginInput) {
     "auth.invalidCredentials",
   );
   if (!user || !user.passwordAuth) {
+    await wasteTimeLikeVerify(input.password);
     throw genericError;
   }
   const validPassword = await verifyPassword(

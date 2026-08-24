@@ -1,5 +1,12 @@
 import { db } from "@/lib/db";
 
+// Couche d'accès aux données pour l'authentification : requêtes Prisma
+// brutes uniquement, aucune règle métier ici (elle vit dans
+// modules/auth/service.ts qui est le seul appelant attendu). Les `include`
+// ci-dessous (account, passwordAuth, profile, roles) sont choisis au cas
+// par cas selon ce dont service.ts a besoin — ne pas les retirer sans
+// vérifier tous les appelants.
+
 export function findUserByEmail(email: string) {
   return db.user.findUnique({
     where: { email },
