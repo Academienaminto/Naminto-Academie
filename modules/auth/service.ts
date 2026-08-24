@@ -9,8 +9,10 @@ import {
 import { issueEmailVerification, consumeEmailVerification } from "@/lib/auth/email-verification";
 import { issuePasswordReset, consumePasswordReset } from "@/lib/auth/password-reset";
 import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/email/send";
+import { isOnline } from "@/lib/auth/presence";
 import {
   createUser,
+  findLatestSeuilSession,
   findUserByEmail,
   findUserById,
   updatePasswordHash,
@@ -235,4 +237,10 @@ export async function logout() {
 
 export async function me() {
   return getCurrentUser();
+}
+
+/** Présence du Seuil côté membre — voir lib/auth/presence.ts. */
+export async function isSeuilOnline() {
+  const session = await findLatestSeuilSession();
+  return isOnline(session?.lastActivityAt ?? null);
 }

@@ -39,6 +39,8 @@ export interface Dictionary {
     sending: string;
     close: string;
     reopen: string;
+    seuilOnline: string;
+    seuilOffline: string;
   };
   home: {
     titleLine1: string;
@@ -293,6 +295,8 @@ export const dictionaries: Record<"fr" | "en", Dictionary> = {
       sending: "…",
       close: "Fermer la conversation",
       reopen: "Rouvrir",
+      seuilOnline: "Le Seuil est en ligne",
+      seuilOffline: "Le Seuil est hors ligne",
     },
     home: {
       titleLine1: "Un cursus initiatique,",
@@ -555,6 +559,8 @@ export const dictionaries: Record<"fr" | "en", Dictionary> = {
       sending: "…",
       close: "Close conversation",
       reopen: "Reopen",
+      seuilOnline: "Le Seuil is online",
+      seuilOffline: "Le Seuil is offline",
     },
     home: {
       titleLine1: "An initiatory path,",

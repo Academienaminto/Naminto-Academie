@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { search } from "@/modules/members/service";
 import { MemberSearchForm } from "@/components/forms/seuil/MemberSearchForm";
+import { isOnline } from "@/lib/auth/presence";
 
 const STATUS_LABELS: Record<string, string> = {
   ACTIF: "Actif",
@@ -39,6 +40,7 @@ export default async function SeuilMembersPage({
             [member.profile?.firstName, member.profile?.lastName].filter(Boolean).join(" ") ||
             member.email;
           const status = member.account?.status ?? "ACTIF";
+          const online = isOnline(member.sessions[0]?.lastActivityAt);
 
           return (
             <li key={member.id}>
@@ -47,10 +49,19 @@ export default async function SeuilMembersPage({
                 className="flex flex-col gap-2 rounded-lg border border-border bg-surface p-4 hover:border-accent sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="text-text">{name}</p>
+                  <p className="flex items-center gap-2 text-text">
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${online ? "bg-success" : "bg-text-muted"}`}
+                      title={online ? "En ligne" : "Hors ligne"}
+                    />
+                    {name}
+                  </p>
                   <p className="truncate text-xs text-text-muted">{member.email}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
+                  {online && (
+                    <span className="text-xs text-success">En ligne</span>
+                  )}
                   <span className="text-xs text-text-muted">
                     {member.roles.map((r) => r.role.name).join(", ")}
                   </span>

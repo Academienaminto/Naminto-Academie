@@ -14,7 +14,16 @@ export function search(query: string | undefined) {
           ],
         }
       : undefined,
-    include: { account: true, profile: true, roles: { include: { role: true } } },
+    include: {
+      account: true,
+      profile: true,
+      roles: { include: { role: true } },
+      sessions: {
+        where: { status: "ACTIVE" },
+        orderBy: { lastActivityAt: "desc" },
+        take: 1,
+      },
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
   });

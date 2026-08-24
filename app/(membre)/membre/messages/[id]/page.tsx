@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { getConversation } from "@/modules/messaging/service";
 import { ReplyForm } from "@/components/forms/ReplyForm";
 import { StatusButton } from "@/components/forms/seuil/StatusButton";
+import { SeuilOnlineBadge } from "@/components/ui/SeuilOnlineBadge";
 import { getDictionary } from "@/lib/i18n/locale";
 
 export default async function MembreConversationPage({
@@ -34,6 +35,10 @@ export default async function MembreConversationPage({
       <Link href="/membre/messages" className="text-sm text-text-muted hover:text-accent">
         {t.messagesPage.back}
       </Link>
+      <SeuilOnlineBadge
+        onlineLabel={t.messagesPage.seuilOnline}
+        offlineLabel={t.messagesPage.seuilOffline}
+      />
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-semibold text-text">
           {t.messagesPage.title}

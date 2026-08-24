@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth/session";
 import { listMine } from "@/modules/messaging/service";
+import { SeuilOnlineBadge } from "@/components/ui/SeuilOnlineBadge";
 import { getDictionary } from "@/lib/i18n/locale";
 
 export default async function MembreMessagesPage() {
@@ -13,9 +14,15 @@ export default async function MembreMessagesPage() {
       <Link href="/membre" className="text-sm text-text-muted hover:text-accent">
         {t.messagesPage.back}
       </Link>
-      <h1 className="font-heading text-2xl font-semibold text-text">
-        {t.messagesPage.title}
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-heading text-2xl font-semibold text-text">
+          {t.messagesPage.title}
+        </h1>
+        <SeuilOnlineBadge
+          onlineLabel={t.messagesPage.seuilOnline}
+          offlineLabel={t.messagesPage.seuilOffline}
+        />
+      </div>
 
       <ul className="flex flex-col gap-3">
         {conversations.map((conversation) => {

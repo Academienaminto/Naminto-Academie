@@ -4,6 +4,7 @@ import { userHasRole } from "@/lib/auth/permissions";
 import { LogoutButton } from "@/components/forms/LogoutButton";
 import { MembreMobileNav } from "@/components/navigation/MembreMobileNav";
 import { CourseStateBadge } from "@/components/ui/CourseStateBadge";
+import { SeuilOnlineBadge } from "@/components/ui/SeuilOnlineBadge";
 import { PurchaseButton } from "@/components/forms/PurchaseButton";
 import { listMine } from "@/modules/enrollment/service";
 import {
@@ -75,6 +76,10 @@ export default async function MembreHomePage() {
             {t.membrePage.greeting}
             {user?.profile?.firstName ? `, ${user.profile.firstName}` : ""}
           </h1>
+          <SeuilOnlineBadge
+            onlineLabel={t.messagesPage.seuilOnline}
+            offlineLabel={t.messagesPage.seuilOffline}
+          />
         </div>
         <div className="hidden flex-wrap items-center gap-3 md:flex">
           <Link href="/cursus" className="text-sm text-text hover:text-accent">

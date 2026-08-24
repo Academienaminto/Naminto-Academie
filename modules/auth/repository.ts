@@ -63,3 +63,16 @@ export function updatePasswordHash(userId: string, passwordHash: string) {
     data: { passwordHash },
   });
 }
+
+/** Session active la plus récente parmi les comptes portant le rôle
+ * SEUIL — sert à déterminer si « le Seuil » est en ligne côté membre. */
+export async function findLatestSeuilSession() {
+  return db.session.findFirst({
+    where: {
+      status: "ACTIVE",
+      user: { roles: { some: { role: { name: "SEUIL" } } } },
+    },
+    orderBy: { lastActivityAt: "desc" },
+    select: { lastActivityAt: true },
+  });
+}
